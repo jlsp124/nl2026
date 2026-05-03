@@ -131,6 +131,10 @@ h1 {
   min-height: 62px;
 }
 
+.mode-wide {
+  grid-column: 1 / -1;
+}
+
 .btn {
   width: 100%;
   min-height: 54px;
@@ -298,6 +302,13 @@ h1 {
   line-height: 1.45;
 }
 
+.current-question {
+  margin: 14px 0 0;
+  color: #f4fbff;
+  font-size: 1.05rem;
+  font-weight: 900;
+}
+
 .stage-dots {
   display: flex;
   gap: 7px;
@@ -405,6 +416,49 @@ h1 {
 
 .choice.weak-choice {
   border-color: rgba(255, 191, 87, 0.36);
+}
+
+.question-choice.correct-choice {
+  border-color: rgba(0, 224, 184, 0.72);
+  background: rgba(0, 127, 113, 0.82);
+}
+
+.question-choice.wrong-choice {
+  border-color: rgba(255, 93, 93, 0.72);
+  background: rgba(92, 36, 42, 0.9);
+}
+
+.question-choice:disabled {
+  opacity: 1;
+}
+
+.question-explain {
+  display: grid;
+  gap: 10px;
+  margin-top: 16px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: rgba(6, 16, 26, 0.62);
+}
+
+.question-explain h3 {
+  margin: 0;
+  color: var(--accent);
+}
+
+.question-explain p {
+  margin: 0;
+  color: #dcebf4;
+  line-height: 1.45;
+}
+
+.question-card {
+  max-width: 780px;
+}
+
+.question-control-bar {
+  grid-template-columns: 1fr 1.2fr;
 }
 
 .no-choices {

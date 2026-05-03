@@ -49,6 +49,39 @@
       "Source-aligned starter concept: allergic reaction/anaphylaxis practice focuses on recognizing airway/breathing/circulation risk, EMS, epinephrine auto-injector assistance if available/allowed, and monitoring. Instructor review needed.",
   };
 
+  const contentSources = [
+    {
+      topic: "Primary and secondary assessment",
+      summary:
+        "Uses a Lifesaving Society-style split between primary assessment (scene safety, responsiveness/LOC, airway, breathing, circulation/major bleeding, mechanism) and secondary assessment (vital signs, head-to-toe check, history, reassessment/monitoring).",
+    },
+    {
+      topic: "CPR/AED",
+      summary:
+        "CPR/AED choices are treated as correct only for unresponsive victims who are not breathing normally; breathing normally routes toward airway maintenance and monitoring instead.",
+    },
+    {
+      topic: "Severe bleeding",
+      summary:
+        "Heavy bleeding scenarios prioritize firm direct pressure, maintaining/reinforcing pressure, EMS/help, and shock care after bleeding control starts.",
+    },
+    {
+      topic: "Burns",
+      summary:
+        "Burn scenarios use stop/remove from source if safe, cool with clean cool water, get clean dressing/supplies, then cover loosely after cooling.",
+    },
+    {
+      topic: "Heat illness",
+      summary:
+        "Heat exhaustion emphasizes cooler area, rest, gear removal, fluids only if awake/able, and monitoring; heat stroke suspicion emphasizes early EMS and active cooling.",
+    },
+    {
+      topic: "Oxygen and pulse oximetry",
+      summary:
+        "Pulse ox, oxygen, BVM, and suction are tagged advanced/lifeguard-equipment/instructor-review-needed and are not universal basic first-aid requirements.",
+    },
+  ];
+
   const instructorReviewNotes = {
     general: "Ask our instructor if something is different.",
     cprAed: "Ask our instructor how they want CPR/AED steps and wording handled.",
@@ -126,11 +159,11 @@
       missed: "You missed getting the AED.",
     },
     get_first_aid_kit: {
-      label: "Get first aid kit",
-      detail: "Bring dressings, gloves, and basic supplies.",
+      label: "Get first aid kit / clean dressing",
+      detail: "Bring dressings, gloves, sterile non-stick dressing, or clean cloth.",
       type: "help",
-      positive: "You brought useful first aid supplies.",
-      missed: "You missed bringing first aid supplies.",
+      positive: "You brought useful first aid supplies/clean dressing.",
+      missed: "You missed bringing first aid supplies or a clean dressing.",
     },
     get_backup: {
       label: "Get backup / notify lifeguard team",
@@ -259,11 +292,11 @@
       missed: "You missed cooling the burn with cool clean water.",
     },
     cover_burn_loosely: {
-      label: "Cover burn loosely",
-      detail: "Protect it without tight pressure.",
+      label: "Cover burn loosely with sterile non-stick dressing / clean cloth",
+      detail: "Protect it after cooling without tight pressure.",
       type: "treatment",
-      positive: "Loose covering protects the burn after cooling.",
-      missed: "You missed covering/protecting the burn.",
+      positive: "Loose sterile/clean covering protects the burn after cooling.",
+      missed: "You missed covering/protecting the burn after cooling.",
     },
     cover_without_cooling: {
       label: "Cover burn right away without cooling",
@@ -292,6 +325,13 @@
       type: "treatment",
       positive: "Moving to a cooler area reduces heat stress.",
       missed: "You missed moving them to a cooler area.",
+    },
+    rest_in_cool_area: {
+      label: "Rest in cooler area",
+      detail: "Have them stop activity and rest while cooling.",
+      type: "treatment",
+      positive: "Resting in a cooler area fits heat illness care.",
+      missed: "You missed having them rest.",
     },
     fan_only: {
       label: "Place beside fan only",
@@ -350,11 +390,11 @@
       warning: "Only monitoring is not enough when urgent care is needed.",
     },
     delay_ems_aed: {
-      label: "Delay EMS/AED until later",
-      detail: "A bad delay in serious breathing/cardiac scenarios.",
+      label: "Delay EMS / needed equipment until later",
+      detail: "A bad delay in serious scenarios.",
       type: "help",
       quality: "danger",
-      warning: "Delaying EMS/AED is dangerous in this scenario.",
+      warning: "Delaying EMS or needed equipment is dangerous in this scenario.",
     },
     ignore_worsening_confusion: {
       label: "Ignore worsening confusion",
@@ -461,6 +501,46 @@
       positive: "Monitoring until help arrives is strong ongoing care.",
       missed: "You missed ongoing monitoring.",
     },
+    check_spo2: {
+      label: "Check SpO2 with pulse oximeter if trained/equipment available",
+      detail: "Advanced lifeguard-equipment check; use only if trained and available.",
+      type: "ongoing",
+      tags: ["advanced", "lifeguard-equipment", "instructor-review-needed"],
+      positive: "Pulse oximeter use can support reassessment when trained/equipment is available.",
+      missed: "You did not use pulse oximetry; only count this if the class includes it.",
+    },
+    prepare_oxygen: {
+      label: "Prepare oxygen kit",
+      detail: "Advanced lifeguard-equipment setup for breathing emergencies if trained.",
+      type: "help",
+      tags: ["advanced", "lifeguard-equipment", "instructor-review-needed"],
+      positive: "Preparing oxygen equipment can fit trained lifeguard responses.",
+      missed: "You did not prepare oxygen equipment; only count this if the class includes it.",
+    },
+    administer_oxygen: {
+      label: "Administer oxygen if trained and protocol indicates",
+      detail: "Advanced oxygen care; do not treat as a universal basic first-aid step.",
+      type: "treatment",
+      tags: ["advanced", "lifeguard-equipment", "instructor-review-needed"],
+      positive: "Oxygen administration may fit trained/protocol-based breathing emergencies.",
+      missed: "You did not administer oxygen; only count this if the class includes it.",
+    },
+    prepare_bvm_oxygen: {
+      label: "Prepare BVM/oxygen support if trained",
+      detail: "Advanced airway support for non-normal breathing if trained.",
+      type: "help",
+      tags: ["advanced", "lifeguard-equipment", "instructor-review-needed"],
+      positive: "Preparing BVM/oxygen support can fit trained responses to non-normal breathing.",
+      missed: "You did not prepare BVM/oxygen support; only count this if the class includes it.",
+    },
+    use_suction: {
+      label: "Use suction if trained/protocol indicates",
+      detail: "Advanced airway equipment for fluids/vomit if trained and indicated.",
+      type: "treatment",
+      tags: ["advanced", "lifeguard-equipment", "instructor-review-needed"],
+      positive: "Suction can fit trained airway management when fluids block the airway.",
+      missed: "You did not use suction; only count this if the class includes it.",
+    },
     leave_alone: {
       label: "Leave victim alone",
       detail: "They still need monitoring.",
@@ -547,7 +627,10 @@
   }
 
   const commonPrimary = ["scene_safety", "ppe_barriers", "check_responsiveness", "check_mechanism"];
-  const commonHelp = ["call_ems_911", "get_aed", "get_first_aid_kit", "get_backup", "delay_ems_aed"];
+  const emergencyHelp = ["call_ems_911", "get_first_aid_kit", "get_backup", "delay_ems_aed"];
+  const cprHelp = ["call_ems_911", "get_aed", "get_first_aid_kit", "get_backup", "delay_ems_aed"];
+  const minorHelp = ["get_first_aid_kit", "get_backup", "call_ems_911"];
+  const breathingHelp = ["call_ems_911", "get_first_aid_kit", "get_backup", "delay_ems_aed", "prepare_oxygen"];
   const commonOngoing = [
     "head_to_toe",
     "check_skin",
@@ -574,7 +657,7 @@
       stages: withReview([
         stage("primary", commonPrimary),
         stage("abc", ["check_airway_breathing", "check_severe_bleeding", "check_circulation_life_threats"]),
-        stage("help", commonHelp),
+        stage("help", emergencyHelp),
         stage("treatment", [
           "firm_direct_pressure",
           "light_pressure_pad",
@@ -619,6 +702,7 @@
       optionalGoodActions: ["get_backup", "get_first_aid_kit", "check_circulation_life_threats", "head_to_toe"],
       weakActions: ["light_pressure_pad", "remove_pressure_early", "treat_shock_first"],
       dangerousActions: ["ignore_severe_bleeding", "leave_alone"],
+      advancedActions: [],
       orderRules: baseOrderRules.concat([
         early("firm_direct_pressure", 6, "Direct pressure should happen early for severe bleeding.", 10),
         before("firm_direct_pressure", "treat_shock_monitor", "Control heavy bleeding before shock care.", 7),
@@ -645,6 +729,7 @@
       sourceNotes: [sourceNotes.general, sourceNotes.severeBleeding],
       instructorReviewNotes: instructorReviewNotes.severeBleeding,
       tags: ["bleeding", "awake", "life threat"],
+      difficulty: "medium",
     },
     {
       id: "severe_bleeding_weak_pressure",
@@ -654,7 +739,7 @@
       stages: withReview([
         stage("primary", commonPrimary),
         stage("abc", ["check_airway_breathing", "check_severe_bleeding", "check_circulation_life_threats"]),
-        stage("help", commonHelp),
+        stage("help", emergencyHelp),
         stage("treatment", [
           "light_pressure_pad",
           "firm_direct_pressure",
@@ -690,6 +775,7 @@
       optionalGoodActions: ["get_first_aid_kit", "get_backup", "treat_shock_monitor", "check_circulation_life_threats"],
       weakActions: ["light_pressure_pad", "remove_pressure_early"],
       dangerousActions: ["ignore_severe_bleeding", "leave_alone"],
+      advancedActions: [],
       orderRules: baseOrderRules.concat([
         early("firm_direct_pressure", 5, "Firm direct pressure should come early in this scenario.", 10),
         before("firm_direct_pressure", "maintain_pressure", "Start firm pressure before maintaining/reinforcing it.", 5),
@@ -713,6 +799,7 @@
       sourceNotes: [sourceNotes.general, sourceNotes.severeBleeding],
       instructorReviewNotes: instructorReviewNotes.severeBleeding,
       tags: ["bleeding", "weak treatment", "pressure"],
+      difficulty: "medium",
     },
     {
       id: "unresponsive_not_breathing",
@@ -722,9 +809,9 @@
       stages: withReview([
         stage("primary", commonPrimary),
         stage("abc", ["check_airway_breathing", "check_severe_bleeding", "check_circulation_life_threats"]),
-        stage("help", commonHelp),
-        stage("treatment", ["cpr_aed", "recovery_position_airway", "monitor_only", "treat_shock_first", "water_unresponsive"]),
-        stage("ongoing", ["pulse_breathing_rate", "reassess_treatment", "monitor_until_help", "leave_alone"]),
+        stage("help", cprHelp.concat(["prepare_oxygen", "prepare_bvm_oxygen"])),
+        stage("treatment", ["cpr_aed", "recovery_position_airway", "monitor_only", "treat_shock_first", "water_unresponsive", "administer_oxygen", "use_suction"]),
+        stage("ongoing", ["pulse_breathing_rate", "check_spo2", "reassess_treatment", "monitor_until_help", "leave_alone"]),
       ]),
       recommendedSequence: [
         "scene_safety",
@@ -745,10 +832,26 @@
           reason: "A quick severe-bleeding scan is useful, but CPR/AED remains the main path.",
           reward: 2,
         },
+        {
+          action: "prepare_oxygen",
+          reason: "Oxygen setup can fit a trained lifeguard response to not-normal breathing.",
+          reward: 2,
+        },
+        {
+          action: "prepare_bvm_oxygen",
+          reason: "BVM/oxygen support can fit if trained and the class includes it.",
+          reward: 2,
+        },
+        {
+          action: "administer_oxygen",
+          reason: "Oxygen may fit trained/protocol-based care while managing breathing.",
+          reward: 2,
+        },
       ],
       optionalGoodActions: ["get_backup", "check_circulation_life_threats"],
       weakActions: ["recovery_position_airway", "monitor_only", "treat_shock_first"],
       dangerousActions: ["water_unresponsive", "delay_ems_aed", "leave_alone"],
+      advancedActions: ["prepare_oxygen", "administer_oxygen", "prepare_bvm_oxygen", "use_suction", "check_spo2"],
       orderRules: baseOrderRules.concat([
         requiresBefore(
           "cpr_aed",
@@ -758,12 +861,17 @@
         ),
         beforeAny("call_ems_911", ["cpr_aed"], "Call EMS before/near CPR/AED.", 8),
         beforeAny("get_aed", ["cpr_aed"], "Get the AED before/near CPR/AED.", 8),
+        before("prepare_oxygen", "administer_oxygen", "Prepare oxygen before administering it.", 4),
       ]),
       actionFeedback: {
         check_responsiveness: "They do not respond.",
         check_airway_breathing: "You do not see normal breathing.",
         call_ems_911: "Emergency help is being called.",
         get_aed: "The AED is on the way.",
+        prepare_oxygen: "The oxygen kit is being prepared for a trained response.",
+        prepare_bvm_oxygen: "BVM/oxygen support is ready if trained and needed.",
+        administer_oxygen: "Oxygen support is used only because this is an advanced/trained-equipment option.",
+        use_suction: "Suction is only useful if airway fluids are present and you are trained.",
         cpr_aed: "You start CPR/AED care.",
         recovery_position_airway: "That would fit better if they were breathing normally.",
         monitor_only: "Only monitoring is not enough if they are not breathing normally.",
@@ -780,6 +888,7 @@
       sourceNotes: [sourceNotes.general, sourceNotes.cprAed],
       instructorReviewNotes: instructorReviewNotes.cprAed,
       tags: ["unresponsive", "not breathing", "aed"],
+      difficulty: "hard",
     },
     {
       id: "unresponsive_breathing",
@@ -789,9 +898,9 @@
       stages: withReview([
         stage("primary", commonPrimary),
         stage("abc", ["check_airway_breathing", "check_severe_bleeding", "check_circulation_life_threats"]),
-        stage("help", commonHelp),
+        stage("help", cprHelp),
         stage("treatment", ["recovery_position_airway", "cpr_while_breathing", "cpr_aed", "water_unresponsive"]),
-        stage("ongoing", ["pulse_breathing_rate", "reassess_treatment", "monitor_until_help", "leave_alone"]),
+        stage("ongoing", ["pulse_breathing_rate", "check_spo2", "reassess_treatment", "monitor_until_help", "leave_alone"]),
       ]),
       recommendedSequence: [
         "scene_safety",
@@ -812,10 +921,21 @@
           reason: "AED readiness can be useful backup, but this person is breathing normally.",
           reward: 2,
         },
+        {
+          action: "check_spo2",
+          reason: "Pulse ox can support monitoring if trained/equipment is available.",
+          reward: 1,
+        },
+        {
+          action: "administer_oxygen",
+          reason: "Oxygen may fit trained/protocol-based care if breathing trouble is part of the concern.",
+          reward: 1,
+        },
       ],
       optionalGoodActions: ["get_backup", "check_severe_bleeding", "check_circulation_life_threats"],
       weakActions: ["cpr_aed"],
       dangerousActions: ["cpr_while_breathing", "water_unresponsive", "leave_alone"],
+      advancedActions: ["check_spo2"],
       orderRules: baseOrderRules.concat([
         requiresBefore(
           "recovery_position_airway",
@@ -848,6 +968,7 @@
       sourceNotes: [sourceNotes.general, sourceNotes.unresponsiveBreathing],
       instructorReviewNotes: instructorReviewNotes.unresponsiveBreathing,
       tags: ["unresponsive", "breathing", "airway"],
+      difficulty: "medium",
     },
     {
       id: "suspected_fracture",
@@ -857,7 +978,7 @@
       stages: withReview([
         stage("primary", commonPrimary),
         stage("abc", ["check_airway_breathing", "check_severe_bleeding", "check_circulation_life_threats"]),
-        stage("help", commonHelp),
+        stage("help", minorHelp),
         stage("treatment", [
           "support_immobilize_injury",
           "reassure_only",
@@ -893,6 +1014,7 @@
       optionalGoodActions: ["ppe_barriers", "get_first_aid_kit", "get_backup", "ask_sample", "head_to_toe"],
       weakActions: ["reassure_only", "firm_direct_pressure"],
       dangerousActions: ["force_straighten_deformity", "move_spinal_unnecessary", "leave_alone"],
+      advancedActions: [],
       orderRules: baseOrderRules.concat([
         before("check_airway_breathing", "support_immobilize_injury", "Check basics before focusing on the injury.", 5),
         before("support_immobilize_injury", "check_csm", "Support the injury before detailed limb checks.", 4),
@@ -916,6 +1038,7 @@
       sourceNotes: [sourceNotes.general, sourceNotes.fracture],
       instructorReviewNotes: instructorReviewNotes.fracture,
       tags: ["fracture", "arm", "awake"],
+      difficulty: "medium",
     },
     {
       id: "minor_moderate_burn",
@@ -925,7 +1048,7 @@
       stages: withReview([
         stage("primary", commonPrimary),
         stage("abc", ["check_airway_breathing", "check_severe_bleeding", "check_circulation_life_threats"]),
-        stage("help", commonHelp),
+        stage("help", minorHelp),
         stage("treatment", [
           "remove_from_burn_source",
           "cool_burn_water",
@@ -942,8 +1065,8 @@
         "check_airway_breathing",
         "remove_from_burn_source",
         "cool_burn_water",
-        "cover_burn_loosely",
         "get_first_aid_kit",
+        "cover_burn_loosely",
         "reassess_treatment",
         "monitor_until_help",
       ],
@@ -959,14 +1082,16 @@
       optionalGoodActions: ["ppe_barriers", "get_backup", "ask_sample", "check_skin"],
       weakActions: ["cover_without_cooling"],
       dangerousActions: ["ice_direct_burn", "pop_blisters_creams", "leave_alone"],
+      advancedActions: [],
       orderRules: baseOrderRules.concat([
         before("cool_burn_water", "cover_burn_loosely", "Cool the burn before covering it.", 9),
         before("remove_from_burn_source", "cool_burn_water", "Stop the burn source before cooling.", 5),
+        before("get_first_aid_kit", "cover_burn_loosely", "Get a first aid kit/clean dressing before covering the burn.", 4),
       ]),
       actionFeedback: {
         remove_from_burn_source: "The burn source is no longer causing damage.",
         cool_burn_water: "The burn is being cooled with clean cool water.",
-        cover_burn_loosely: "The burn is protected without tight pressure.",
+        cover_burn_loosely: "The burn is protected with a sterile non-stick dressing or clean cloth.",
         cover_without_cooling: "The burn still needs cooling first.",
         ice_direct_burn: "The skin reacts badly to direct ice.",
         pop_blisters_creams: "The burn area is being irritated instead of protected.",
@@ -982,6 +1107,7 @@
       sourceNotes: [sourceNotes.general, sourceNotes.burn],
       instructorReviewNotes: instructorReviewNotes.burn,
       tags: ["burn", "hand", "blisters"],
+      difficulty: "medium",
     },
     {
       id: "heat_exhaustion",
@@ -991,8 +1117,8 @@
       stages: withReview([
         stage("primary", commonPrimary),
         stage("abc", ["check_airway_breathing", "check_circulation_life_threats", "check_skin"]),
-        stage("help", commonHelp),
-        stage("treatment", ["move_cooler_area", "loosen_heavy_gear", "sips_fluid_awake", "wet_skin_fan", "fan_only"]),
+        stage("help", minorHelp),
+        stage("treatment", ["move_cooler_area", "rest_in_cool_area", "loosen_heavy_gear", "sips_fluid_awake", "wet_skin_fan", "fan_only"]),
         stage("ongoing", ["check_skin", "pulse_breathing_rate", "ask_sample", "reassess_treatment", "monitor_until_help", "ignore_worsening_confusion", "leave_alone"]),
       ]),
       recommendedSequence: [
@@ -1000,6 +1126,7 @@
         "check_responsiveness",
         "check_airway_breathing",
         "move_cooler_area",
+        "rest_in_cool_area",
         "loosen_heavy_gear",
         "sips_fluid_awake",
         "wet_skin_fan",
@@ -1007,7 +1134,7 @@
         "reassess_treatment",
         "monitor_until_help",
       ],
-      criticalActions: ["scene_safety", "move_cooler_area", "loosen_heavy_gear", "reassess_treatment"],
+      criticalActions: ["scene_safety", "move_cooler_area", "rest_in_cool_area", "loosen_heavy_gear", "reassess_treatment"],
       expectedActions: ["check_responsiveness", "check_airway_breathing", "sips_fluid_awake", "check_skin", "monitor_until_help"],
       contextualActions: [
         {
@@ -1024,12 +1151,14 @@
       optionalGoodActions: ["ppe_barriers", "get_backup", "pulse_breathing_rate", "ask_sample"],
       weakActions: ["fan_only"],
       dangerousActions: ["ignore_worsening_confusion", "leave_alone", "water_unresponsive"],
+      advancedActions: [],
       orderRules: baseOrderRules.concat([
         before("move_cooler_area", "sips_fluid_awake", "Move them out of heat before focusing on fluids.", 5),
         before("check_responsiveness", "sips_fluid_awake", "Only give fluids if they are awake/able.", 8),
       ]),
       actionFeedback: {
         move_cooler_area: "They are out of direct heat.",
+        rest_in_cool_area: "They stop activity and rest in the cooler area.",
         loosen_heavy_gear: "Extra heat-trapping gear is loosened or removed.",
         sips_fluid_awake: "They take small sips because they are awake and able.",
         wet_skin_fan: "Cooling has started and you keep reassessing.",
@@ -1047,6 +1176,7 @@
       sourceNotes: [sourceNotes.general, sourceNotes.heat],
       instructorReviewNotes: instructorReviewNotes.heat,
       tags: ["heat", "awake", "dizzy"],
+      difficulty: "medium",
     },
     {
       id: "heat_stroke_suspicion",
@@ -1056,9 +1186,9 @@
       stages: withReview([
         stage("primary", commonPrimary),
         stage("abc", ["check_airway_breathing", "check_circulation_life_threats", "check_skin"]),
-        stage("help", commonHelp),
-        stage("treatment", ["move_cooler_area", "loosen_heavy_gear", "wet_skin_fan", "cold_packs_core", "sips_fluid_awake", "fan_only", "water_unresponsive"]),
-        stage("ongoing", ["check_skin", "pulse_breathing_rate", "reassess_treatment", "monitor_until_help", "ignore_worsening_confusion", "leave_alone"]),
+        stage("help", breathingHelp),
+        stage("treatment", ["move_cooler_area", "loosen_heavy_gear", "wet_skin_fan", "cold_packs_core", "sips_fluid_awake", "fan_only", "water_unresponsive", "administer_oxygen"]),
+        stage("ongoing", ["check_skin", "pulse_breathing_rate", "check_spo2", "reassess_treatment", "monitor_until_help", "ignore_worsening_confusion", "leave_alone"]),
       ]),
       recommendedSequence: [
         "scene_safety",
@@ -1081,10 +1211,21 @@
           reason: "Backup helps with EMS, active cooling, and monitoring.",
           reward: 3,
         },
+        {
+          action: "prepare_oxygen",
+          reason: "Oxygen setup can fit a trained lifeguard response to altered responsiveness.",
+          reward: 2,
+        },
+        {
+          action: "check_spo2",
+          reason: "Pulse ox can support monitoring if trained/equipment is available.",
+          reward: 1,
+        },
       ],
       optionalGoodActions: ["ppe_barriers", "get_first_aid_kit", "pulse_breathing_rate"],
-      weakActions: ["sips_fluid_awake", "fan_only"],
-      dangerousActions: ["water_unresponsive", "ignore_worsening_confusion", "leave_alone", "delay_ems_aed"],
+      weakActions: ["fan_only"],
+      dangerousActions: ["sips_fluid_awake", "water_unresponsive", "ignore_worsening_confusion", "leave_alone", "delay_ems_aed"],
+      advancedActions: ["prepare_oxygen", "administer_oxygen", "check_spo2"],
       orderRules: baseOrderRules.concat([
         beforeAny("call_ems_911", ["wet_skin_fan", "cold_packs_core"], "Call EMS early for heat stroke signs.", 10),
         before("move_cooler_area", "wet_skin_fan", "Move them out of heat before active cooling if safe.", 5),
@@ -1097,6 +1238,9 @@
         wet_skin_fan: "Active cooling has started.",
         cold_packs_core: "Cold packs are applied to core areas.",
         sips_fluid_awake: "They are confused, so drinking may not be safe.",
+        prepare_oxygen: "The oxygen kit is ready if trained/protocol says to use it.",
+        administer_oxygen: "Oxygen is an advanced/trained-equipment action here.",
+        check_spo2: "Pulse ox is used as an advanced monitoring tool.",
         fan_only: "They are still confused and very hot.",
         water_unresponsive: "They may not be able to swallow safely.",
       },
@@ -1111,6 +1255,7 @@
       sourceNotes: [sourceNotes.general, sourceNotes.heat],
       instructorReviewNotes: instructorReviewNotes.heat,
       tags: ["heat", "confused", "serious"],
+      difficulty: "hard",
     },
     {
       id: "asthma_breathing_difficulty",
@@ -1120,9 +1265,9 @@
       stages: withReview([
         stage("primary", commonPrimary),
         stage("abc", ["check_airway_breathing", "check_circulation_life_threats", "check_skin"]),
-        stage("help", commonHelp),
-        stage("treatment", ["sit_upright_rest", "help_use_inhaler", "coach_slow_breathing", "give_someone_else_inhaler", "water_unresponsive"]),
-        stage("ongoing", ["pulse_breathing_rate", "ask_sample", "reassess_treatment", "monitor_until_help", "ignore_worsening_confusion", "leave_alone"]),
+        stage("help", breathingHelp),
+        stage("treatment", ["sit_upright_rest", "help_use_inhaler", "coach_slow_breathing", "administer_oxygen", "give_someone_else_inhaler", "water_unresponsive"]),
+        stage("ongoing", ["pulse_breathing_rate", "check_spo2", "ask_sample", "reassess_treatment", "monitor_until_help", "ignore_worsening_confusion", "leave_alone"]),
       ]),
       recommendedSequence: [
         "scene_safety",
@@ -1150,10 +1295,26 @@
           reason: "Calm coaching is useful support when they are awake.",
           reward: 2,
         },
+        {
+          action: "prepare_oxygen",
+          reason: "Oxygen setup can fit severe or not-improving respiratory distress if trained.",
+          reward: 2,
+        },
+        {
+          action: "check_spo2",
+          reason: "Pulse ox can support respiratory reassessment if trained/equipment is available.",
+          reward: 1,
+        },
+        {
+          action: "administer_oxygen",
+          reason: "Oxygen can fit severe or not-improving breathing distress if trained/protocol indicates.",
+          reward: 2,
+        },
       ],
       optionalGoodActions: ["ppe_barriers", "ask_sample", "check_skin"],
       weakActions: ["monitor_only"],
       dangerousActions: ["give_someone_else_inhaler", "water_unresponsive", "ignore_worsening_confusion", "leave_alone"],
+      advancedActions: ["prepare_oxygen", "administer_oxygen", "check_spo2"],
       orderRules: baseOrderRules.concat([
         before("check_airway_breathing", "help_use_inhaler", "Check breathing before deciding treatment.", 7),
         before("sit_upright_rest", "help_use_inhaler", "Position/rest comes before or alongside inhaler help.", 4),
@@ -1164,6 +1325,9 @@
         sit_upright_rest: "They look a little more settled sitting upright.",
         help_use_inhaler: "They use their prescribed inhaler.",
         coach_slow_breathing: "They focus on slower breathing while you reassess.",
+        prepare_oxygen: "Oxygen equipment is prepared as an advanced/trained option.",
+        administer_oxygen: "Oxygen is used only if trained and the class protocol indicates it.",
+        check_spo2: "Pulse ox gives another reassessment clue if trained/equipment is available.",
         give_someone_else_inhaler: "That medication shortcut is not safe.",
         ignore_worsening_confusion: "Worsening confusion would be a major warning sign.",
       },
@@ -1178,6 +1342,7 @@
       sourceNotes: [sourceNotes.general, sourceNotes.asthma],
       instructorReviewNotes: instructorReviewNotes.asthma,
       tags: ["breathing", "asthma", "responsive"],
+      difficulty: "hard",
     },
     {
       id: "allergic_reaction_anaphylaxis",
@@ -1187,9 +1352,9 @@
       stages: withReview([
         stage("primary", commonPrimary),
         stage("abc", ["check_airway_breathing", "check_circulation_life_threats", "check_skin"]),
-        stage("help", commonHelp),
-        stage("treatment", ["remove_allergen_if_safe", "assist_epinephrine", "sit_upright_rest", "give_food_drink_allergy", "water_unresponsive"]),
-        stage("ongoing", ["watch_for_anaphylaxis", "pulse_breathing_rate", "ask_sample", "reassess_treatment", "monitor_until_help", "leave_alone"]),
+        stage("help", breathingHelp),
+        stage("treatment", ["remove_allergen_if_safe", "assist_epinephrine", "sit_upright_rest", "administer_oxygen", "give_food_drink_allergy", "water_unresponsive"]),
+        stage("ongoing", ["watch_for_anaphylaxis", "pulse_breathing_rate", "check_spo2", "ask_sample", "reassess_treatment", "monitor_until_help", "leave_alone"]),
       ]),
       recommendedSequence: [
         "scene_safety",
@@ -1218,10 +1383,26 @@
           reason: "Backup helps with EMS, medication, and monitoring.",
           reward: 3,
         },
+        {
+          action: "prepare_oxygen",
+          reason: "Oxygen setup can fit anaphylaxis with breathing trouble if trained.",
+          reward: 2,
+        },
+        {
+          action: "check_spo2",
+          reason: "Pulse ox can support breathing reassessment if trained/equipment is available.",
+          reward: 1,
+        },
+        {
+          action: "administer_oxygen",
+          reason: "Oxygen can fit anaphylaxis with breathing trouble if trained/protocol indicates.",
+          reward: 2,
+        },
       ],
       optionalGoodActions: ["ppe_barriers", "ask_sample", "get_first_aid_kit", "sit_upright_rest"],
       weakActions: ["monitor_only"],
       dangerousActions: ["give_food_drink_allergy", "water_unresponsive", "leave_alone", "delay_ems_aed"],
+      advancedActions: ["prepare_oxygen", "administer_oxygen", "check_spo2"],
       orderRules: baseOrderRules.concat([
         beforeAny("call_ems_911", ["assist_epinephrine", "monitor_until_help"], "Call EMS early for anaphylaxis signs.", 10),
         before("check_airway_breathing", "assist_epinephrine", "Check airway/breathing before or alongside epinephrine help.", 6),
@@ -1232,6 +1413,9 @@
         check_skin: "Hives and swelling support the allergic reaction concern.",
         call_ems_911: "Emergency help is being called.",
         assist_epinephrine: "You help with the auto-injector as the scenario allows.",
+        prepare_oxygen: "Oxygen equipment is prepared as an advanced/trained option.",
+        administer_oxygen: "Oxygen is used only if trained and the class protocol indicates it.",
+        check_spo2: "Pulse ox gives another breathing reassessment clue if trained/equipment is available.",
         give_food_drink_allergy: "Food or drink could make airway/swallowing problems worse.",
         watch_for_anaphylaxis: "You keep watching for breathing, swelling, and responsiveness changes.",
       },
@@ -1246,6 +1430,7 @@
       sourceNotes: [sourceNotes.general, sourceNotes.anaphylaxis],
       instructorReviewNotes: instructorReviewNotes.anaphylaxis,
       tags: ["allergy", "anaphylaxis", "breathing"],
+      difficulty: "hard",
     },
   ];
 
@@ -1253,9 +1438,188 @@
     scenario.suggestedOrderText = labelsFor(scenario.recommendedSequence);
   }
 
+  const questions = [
+    {
+      id: "q_bleeding_best_next",
+      topic: "Severe bleeding",
+      prompt: "Heavy bleeding is soaking through a towel. Safety and PPE are handled. What is the best next treatment?",
+      choices: [
+        {
+          id: "direct_pressure",
+          text: "Apply firm direct pressure.",
+          correct: true,
+          explanation: "Firm direct pressure is the key first treatment for heavy external bleeding.",
+        },
+        {
+          id: "light_pad",
+          text: "Put a pad on lightly.",
+          explanation: "Light pressure is weak. Heavy bleeding needs firm pressure.",
+        },
+        {
+          id: "shock_first",
+          text: "Treat for shock before touching the bleeding.",
+          explanation: "Shock care is good later, but it does not replace controlling heavy bleeding.",
+        },
+        {
+          id: "pupils",
+          text: "Keep checking pupils.",
+          explanation: "That does not control the life-threatening bleeding.",
+        },
+      ],
+      relatedTags: ["bleeding", "pressure", "life threat"],
+    },
+    {
+      id: "q_burn_order",
+      topic: "Burns",
+      prompt: "After a small/moderate burn is removed from the heat source, what order is strongest?",
+      choices: [
+        {
+          id: "cool_then_cover",
+          text: "Cool with clean cool water, get clean dressing/supplies, then cover loosely.",
+          correct: true,
+          explanation: "Cooling comes before covering, and supplies/clean dressing make the covering step make sense.",
+        },
+        {
+          id: "cover_first",
+          text: "Cover right away before cooling.",
+          explanation: "Covering before cooling misses the main burn-care step.",
+        },
+        {
+          id: "ice",
+          text: "Apply ice directly to the burn.",
+          explanation: "Direct ice can worsen tissue injury.",
+        },
+        {
+          id: "blisters",
+          text: "Pop blisters and add random cream.",
+          explanation: "That is not a good first response and can make things worse.",
+        },
+      ],
+      relatedTags: ["burn", "cool first", "cover after cooling"],
+    },
+    {
+      id: "q_heat_stroke",
+      topic: "Heat stroke suspicion",
+      prompt: "A patron is very hot, confused, and not acting normally. What response is strongest?",
+      choices: [
+        {
+          id: "ems_cooling",
+          text: "Call EMS early and start active cooling.",
+          correct: true,
+          explanation: "Confusion with severe heat signs is treated as serious: EMS plus active cooling.",
+        },
+        {
+          id: "fan_only",
+          text: "Place them beside a fan only.",
+          explanation: "Fan-only is weak for heat stroke signs. Use active cooling.",
+        },
+        {
+          id: "fluids_confused",
+          text: "Give fluids even though they are confused.",
+          explanation: "Confusion can make swallowing unsafe. Do not assume fluids are safe.",
+        },
+        {
+          id: "wait",
+          text: "Wait to see if it passes.",
+          explanation: "Delaying EMS/cooling is the wrong priority.",
+        },
+      ],
+      relatedTags: ["heat", "confusion", "active cooling"],
+    },
+    {
+      id: "q_unresponsive_breathing",
+      topic: "Unresponsive but breathing",
+      prompt: "Someone is unresponsive but breathing normally. What is the better care path?",
+      choices: [
+        {
+          id: "airway_monitor",
+          text: "Maintain airway/recovery-position style care, get help, and monitor.",
+          correct: true,
+          explanation: "Breathing normally means airway maintenance and monitoring, not CPR.",
+        },
+        {
+          id: "start_cpr",
+          text: "Start CPR immediately.",
+          explanation: "CPR is for not breathing normally, not normal breathing.",
+        },
+        {
+          id: "give_water",
+          text: "Give water.",
+          explanation: "An unresponsive person may not swallow safely.",
+        },
+        {
+          id: "leave",
+          text: "Leave them alone to recover.",
+          explanation: "They need monitoring because their breathing/status can change.",
+        },
+      ],
+      relatedTags: ["unresponsive", "breathing", "airway"],
+    },
+    {
+      id: "q_asthma",
+      topic: "Asthma / breathing difficulty",
+      prompt: "A patron is wheezing and says they have asthma. What is the best response set?",
+      choices: [
+        {
+          id: "upright_inhaler_ems",
+          text: "Position of comfort, help with their prescribed inhaler/action plan, call EMS if severe or not improving.",
+          correct: true,
+          explanation: "Breathing check, position of comfort, prescribed inhaler help, and reassessment are the key ideas.",
+        },
+        {
+          id: "lie_flat",
+          text: "Make them lie flat.",
+          explanation: "Breathing difficulty usually fits position of comfort, not forcing them flat.",
+        },
+        {
+          id: "other_inhaler",
+          text: "Use someone else's inhaler.",
+          explanation: "Do not use someone else's medication in this practice scenario.",
+        },
+        {
+          id: "calm_only",
+          text: "Only tell them to calm down.",
+          explanation: "Calming support can help, but it is incomplete by itself.",
+        },
+      ],
+      relatedTags: ["asthma", "breathing", "inhaler"],
+    },
+    {
+      id: "q_anaphylaxis",
+      topic: "Allergic reaction / anaphylaxis",
+      prompt: "Hives, lip swelling, and throat tightness show up after a sting. What matters most?",
+      choices: [
+        {
+          id: "ems_epi_airway",
+          text: "Call EMS early, help with epinephrine if available/allowed, and monitor airway/breathing.",
+          correct: true,
+          explanation: "Airway/breathing signs make this serious, so EMS and epinephrine help matter early.",
+        },
+        {
+          id: "food_drink",
+          text: "Give food or drink.",
+          explanation: "Food or drink is wrong when airway/swallowing risk is present.",
+        },
+        {
+          id: "monitor_only",
+          text: "Only monitor and wait.",
+          explanation: "Monitoring alone is incomplete when anaphylaxis signs are present.",
+        },
+        {
+          id: "ignore_breathing",
+          text: "Ignore airway/breathing unless they collapse.",
+          explanation: "Airway/breathing changes are exactly what you should be watching.",
+        },
+      ],
+      relatedTags: ["allergy", "anaphylaxis", "epinephrine"],
+    },
+  ];
+
   window.POOL_DECK_DATA = {
     actions,
     scenarios,
+    questions,
+    contentSources,
     stageDefinitions,
   };
 })();

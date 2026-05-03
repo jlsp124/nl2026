@@ -15,6 +15,10 @@
     hint: "",
     result: null,
     dragIndex: null,
+    questionQueue: [],
+    questionIndex: 0,
+    questionScore: 0,
+    selectedAnswerId: "",
   };
 
   const actionTypesThatAreTreatment = new Set(["treatment"]);
@@ -111,9 +115,23 @@
 
   function startMode(mode) {
     state.mode = mode;
+    state.questionQueue = [];
+    state.questionIndex = 0;
+    state.questionScore = 0;
+    state.selectedAnswerId = "";
     state.queue = shuffle(data.scenarios);
     state.scenarioIndex = 0;
     resetScenario();
+    render();
+  }
+
+  function startQuestionMode() {
+    state.mode = "question";
+    state.queue = [];
+    state.questionQueue = shuffle(data.questions || []);
+    state.questionIndex = 0;
+    state.questionScore = 0;
+    state.selectedAnswerId = "";
     render();
   }
 
@@ -428,6 +446,36 @@
     render();
   }
 
+  function currentQuestion() {
+    return state.questionQueue[state.questionIndex];
+  }
+
+  function answerQuestion(answerId) {
+    if (state.selectedAnswerId) {
+      return;
+    }
+
+    state.selectedAnswerId = answerId;
+    const answer = currentQuestion().choices.find((choice) => choice.id === answerId);
+    if (answer && answer.correct) {
+      state.questionScore += 1;
+    }
+    render();
+  }
+
+  function nextQuestion() {
+    if (state.questionIndex < state.questionQueue.length - 1) {
+      state.questionIndex += 1;
+      state.selectedAnswerId = "";
+    } else {
+      state.questionQueue = shuffle(data.questions || []);
+      state.questionIndex = 0;
+      state.questionScore = 0;
+      state.selectedAnswerId = "";
+    }
+    render();
+  }
+
   function renderStart() {
     app.innerHTML = `
       <section class="card start-card">
@@ -438,6 +486,7 @@
         <div class="mode-actions">
           <button class="btn primary" type="button" data-start-mode="practice">Practice Mode</button>
           <button class="btn ghost" type="button" data-start-mode="test">Test Mode</button>
+          <button class="btn ghost mode-wide" type="button" data-start-mode="question">Question Mode</button>
         </div>
       </section>
     `;
@@ -503,6 +552,7 @@
         <p class="stage-kicker">Stage ${state.stageIndex + 1} of ${stageCount}</p>
         <h2 class="stage-title">${escapeHtml(stage.title)}</h2>
         <p class="stage-help">${escapeHtml(stage.help)}</p>
+        <p class="current-question">What do you do next?</p>
         <div class="stage-dots" aria-hidden="true">${renderStageDots(scenario)}</div>
         ${state.latestUpdate ? `<p class="update-line">${escapeHtml(state.latestUpdate)}</p>` : ""}
         ${state.hint ? `<p class="hint-line">${escapeHtml(state.hint)}</p>` : ""}
@@ -704,8 +754,87 @@
     `;
   }
 
+  function renderQuestionMode() {
+    const question = currentQuestion();
+    const selectedAnswer = question.choices.find((choice) => choice.id === state.selectedAnswerId);
+    const correctAnswer = question.choices.find((choice) => choice.correct);
+    const answered = Boolean(state.selectedAnswerId);
+
+    app.innerHTML = `
+      <section class="card question-card">
+        <div class="top-row">
+          <div class="progress-line">
+            <span>Question Mode</span>
+            <span>${state.questionScore}/${answered ? state.questionIndex + 1 : state.questionIndex} correct</span>
+          </div>
+          <div class="progress-track" aria-hidden="true">
+            <div class="progress-fill" style="width: ${((state.questionIndex + 1) / state.questionQueue.length) * 100}%"></div>
+          </div>
+        </div>
+
+        <section class="scenario-panel compact-scenario">
+          <p class="stage-kicker">Question ${state.questionIndex + 1} of ${state.questionQueue.length} - ${escapeHtml(question.topic)}</p>
+          <h2 class="scenario-title">${escapeHtml(question.prompt)}</h2>
+        </section>
+
+        <section class="stage-panel">
+          <div class="choice-list question-choices">
+            ${question.choices
+              .map((choice) => {
+                const isSelected = choice.id === state.selectedAnswerId;
+                const isCorrect = Boolean(choice.correct);
+                const className = answered
+                  ? isCorrect
+                    ? "correct-choice"
+                    : isSelected
+                      ? "wrong-choice"
+                      : ""
+                  : "";
+
+                return `
+                  <button class="btn choice question-choice ${className}" type="button" data-answer-id="${escapeHtml(choice.id)}" ${
+                    answered ? "disabled" : ""
+                  }>
+                    <span>${escapeHtml(choice.text)}</span>
+                  </button>
+                `;
+              })
+              .join("")}
+          </div>
+
+          ${
+            answered
+              ? `
+                <div class="question-explain">
+                  <h3>${selectedAnswer?.correct ? "Correct" : "Correct answer"}</h3>
+                  <p><strong>${escapeHtml(correctAnswer.text)}</strong></p>
+                  <p>${escapeHtml(correctAnswer.explanation)}</p>
+                  <h3>Why the others are wrong</h3>
+                  ${question.choices
+                    .filter((choice) => !choice.correct)
+                    .map((choice) => `<p><strong>${escapeHtml(choice.text)}</strong><br>${escapeHtml(choice.explanation)}</p>`)
+                    .join("")}
+                  <p class="tiny">Related: ${escapeHtml(question.relatedTags.join(", "))}</p>
+                </div>
+              `
+              : ""
+          }
+        </section>
+
+        <div class="control-bar question-control-bar">
+          <button class="btn ghost" type="button" data-start-over="true">Start screen</button>
+          <button class="btn primary" type="button" data-next-question="true" ${answered ? "" : "disabled"}>Next Question</button>
+        </div>
+      </section>
+    `;
+  }
+
   function render() {
     if (state.queue.length === 0) {
+      if (state.mode === "question" && state.questionQueue.length > 0) {
+        renderQuestionMode();
+        return;
+      }
       renderStart();
       return;
     }
@@ -725,7 +854,21 @@
     }
 
     if (button.dataset.startMode) {
-      startMode(button.dataset.startMode);
+      if (button.dataset.startMode === "question") {
+        startQuestionMode();
+      } else {
+        startMode(button.dataset.startMode);
+      }
+    } else if (button.dataset.answerId) {
+      answerQuestion(button.dataset.answerId);
+    } else if (button.dataset.nextQuestion) {
+      nextQuestion();
+    } else if (button.dataset.startOver) {
+      state.mode = "practice";
+      state.queue = [];
+      state.questionQueue = [];
+      state.result = null;
+      render();
     } else if (button.dataset.addAction) {
       addAction(button.dataset.addAction);
     } else if (button.dataset.removeAction) {
