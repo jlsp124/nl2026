@@ -1,169 +1,105 @@
 # Pool Deck Response
 
-Pool Deck Response is a beginner-friendly Rojo Roblox project for a simple single-player first aid / National Lifeguard practice trainer for British Columbia, Canada.
+Pool Deck Response is a static web version of the first aid scenario quiz that started as a Roblox/Rojo MVP. It is built for quick class practice: read a scenario, choose actions in order, move through care stages, submit, and get feedback.
 
-It presents short pool-deck scenarios, lets the player build an ordered response sequence, scores the response, and gives specific feedback about missed critical actions, dangerous choices, weak choices, and order problems.
+GitHub repo: https://github.com/jlsp124/nl2026
 
-## Disclaimer
+## What It Is
 
-Practice tool only. Follow your instructor, course materials, and local protocol.
+- A casual first aid scenario practice app.
+- A static GitHub Pages site with no backend.
+- A port of the earlier Roblox prototype data and scoring ideas.
+- A way to practice order of care, weak treatment choices, dangerous choices, help/equipment timing, and reassessment.
 
-This is not an official medical, legal, certification, or National Lifeguard assessment tool. The game must not be used to decide whether someone passed certification.
+## Why It Was Ported From Roblox
 
-Use wording such as:
+The Roblox/Rojo version was useful for proving the quiz loop, scenario data, action choices, and feedback model. For sharing in class, a static website is simpler:
 
-- Strong response
-- Needs review
-- Missed critical priority
-- Good first step, but incomplete
-- Check your instructor's protocol
+- No Roblox Studio needed.
+- No Rojo install needed.
+- No npm or build step.
+- Works from GitHub Pages.
+- Works locally by opening `index.html`.
 
-Do not use wording such as "passed certification."
+The Roblox prototype is preserved on the `roblox-mvp` branch.
 
-## What This Game Is
-
-- A decision-making practice trainer.
-- A way to test treatment order, missed critical actions, incomplete choices, and common mistakes.
-- A starter Rojo project with all gameplay data in normal text files.
-- A prototype that should be reviewed by an instructor before use.
-
-## What This Game Is Not
-
-- Not an official medical, legal, certification, or National Lifeguard tool.
-- Not a replacement for an instructor, course materials, or local protocol.
-- Not a full lifeguarding game.
-- Not a swimming, rescue, whistle, pool-clearing, multiplayer, inventory, animation, or 3D simulation project.
-
-## Project Structure
+## Files
 
 ```text
-default.project.json
-src/
-  ReplicatedStorage/
-    FirstAidScenarios.luau
-    ActionDefinitions.luau
-    ScoringRules.luau
-  StarterPlayer/
-    StarterPlayerScripts/
-      FirstAidQuiz.client.luau
+index.html
+styles.css
+app.js
+scenarios.js
+README.md
+.gitignore
 ```
 
-Rojo maps these files into Roblox as:
+## Run Locally
 
-- `FirstAidScenarios.luau`: ModuleScript in ReplicatedStorage.
-- `ActionDefinitions.luau`: ModuleScript in ReplicatedStorage.
-- `ScoringRules.luau`: ModuleScript in ReplicatedStorage.
-- `FirstAidQuiz.client.luau`: LocalScript in StarterPlayerScripts.
-
-The LocalScript creates all UI at runtime.
-
-## Requirements
-
-- Roblox Studio.
-- Rojo installed on your machine.
-
-If Rojo is not installed yet, install it from the official Rojo project instructions, then come back to this folder.
-
-## Build With Rojo
-
-From this folder:
-
-```powershell
-rojo build -o build.rbxlx
-```
-
-This creates `build.rbxlx`, which can be opened in Roblox Studio.
-
-## Serve With Rojo
-
-From this folder:
-
-```powershell
-rojo serve
-```
-
-Then in Roblox Studio:
-
-1. Open the Rojo plugin.
-2. Connect to the local Rojo server.
-3. Press Play to test the LocalScript UI.
-
-## How The Game Loop Works
-
-1. The start screen lets the player choose Practice Mode or Test Mode.
-2. A randomized scenario appears in one mobile-friendly card.
-3. The player chooses actions by category and builds an ordered response sequence.
-4. In Practice Mode, scenario-specific updates can appear after selected actions.
-5. The player clears or submits the sequence.
-6. The scoring module checks critical actions, priority order, optional actions, weak choices, and dangerous choices.
-7. A result card shows the score, what went well, what was missed, and the suggested order.
-8. The player can retry or go to the next randomized scenario.
-
-## How To Add Scenarios
-
-Open:
+Option 1: open the file directly.
 
 ```text
-src/ReplicatedStorage/FirstAidScenarios.luau
+index.html
 ```
 
-Copy an existing scenario table and change:
+Option 2: serve the folder locally.
+
+```powershell
+python -m http.server
+```
+
+Then open:
+
+```text
+http://localhost:8000
+```
+
+## Publish With GitHub Pages
+
+1. Push the `main` branch to GitHub.
+2. Open the repo settings for `https://github.com/jlsp124/nl2026`.
+3. Go to Pages.
+4. Set the source to deploy from `main`.
+5. Set the folder to `/root`.
+6. Save and wait for GitHub Pages to publish.
+
+## Edit Scenarios
+
+All scenario data lives in:
+
+```text
+scenarios.js
+```
+
+Each scenario includes:
 
 - `id`
 - `title`
-- `category`
 - `prompt`
-- `victimStatusTags`
+- `stages`
 - `recommendedSequence`
 - `criticalActions`
-- `optionalGoodActions`
-- `dangerousActions`
 - `weakActions`
-- `commonMistakes`
-- `feedbackByAction`
-- `scenarioUpdatesByAction`
-- `successFeedback`
-- `instructorNote`
-- `sourceNote`
+- `dangerousActions`
+- `optionalGoodActions`
+- `actionFeedback`
+- `suggestedOrderText`
+- `hints`
+- `tags`
 
-Use action ids from:
+Actions are defined near the top of `scenarios.js`. If you add a new action id to a scenario, also add it to the `actions` object.
 
-```text
-src/ReplicatedStorage/ActionDefinitions.luau
-```
+## Add Instructor Flashcards Later
 
-Do not invent a new action id in a scenario unless you also add that action to `ActionDefinitions.luau`.
+When real class cards are available:
 
-`scenarioUpdatesByAction` is optional. Use it for short in-the-moment updates, for example:
+1. Replace each starter prompt with the card wording.
+2. Put choices into the right stage: primary, ABC/life threats, help, treatment, ongoing care.
+3. Set `recommendedSequence` to the order you want tested.
+4. Mark must-have actions in `criticalActions`.
+5. Put weak but plausible choices in `weakActions`.
+6. Put serious mistakes in `dangerousActions`.
+7. Add short `actionFeedback` lines for Practice Mode.
+8. Add stage-specific `hints`.
 
-```lua
-scenarioUpdatesByAction = {
-  mistake_light_pressure_bleeding = "The bleeding is still soaking through.",
-}
-```
-
-## Replace Scenario Data With Instructor Situation Cards
-
-The starter scenarios are only placeholders based on common first aid training concepts. They must be verified against your instructor, course materials, and local protocol.
-
-Recommended replacement workflow:
-
-1. Ask the instructor for approved situation cards.
-2. Convert each card into one scenario table.
-3. Use instructor-approved wording for prompts, status tags, critical actions, and feedback.
-4. Keep `sourceNote` clear, for example: `Based on instructor-approved card set, updated YYYY-MM-DD`.
-5. Have the instructor test each scenario in Roblox Studio.
-
-## Public Asset Plan For Later
-
-This prototype intentionally uses only runtime UI and no external assets.
-
-Later, public-safe assets could be added for:
-
-- Simple pool-deck background image.
-- Generic first aid kit icon.
-- Generic AED icon.
-- Generic status tag icons.
-- Simple UI sounds for submit/retry/next.
-
-Only use assets that are public domain, licensed for your use, created in-house, or approved by the course/instructor. Keep asset credits in the README or a future `ASSETS.md`.
+Keep the scenario format simple so classmates can review and edit it without a build tool.

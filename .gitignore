@@ -1,11 +1,3 @@
-# Rojo / Roblox build outputs
-build.rbxlx
-*.rbxl
-*.rbxlx
-*.rbxm
-*.rbxmx
-sourcemap.json
-
 # Local editor and OS files
 .vscode/
 .idea/
@@ -15,3 +7,11 @@ Thumbs.db
 # Local secrets or machine-only config
 .env
 .env.*
+
+# Old Roblox/Rojo artifacts should not be committed on the web branch.
+build.rbxlx
+*.rbxl
+*.rbxlx
+*.rbxm
+*.rbxmx
+sourcemap.json
