@@ -90,13 +90,13 @@ Then in Roblox Studio:
 
 ## How The Game Loop Works
 
-1. A scenario prompt appears.
-2. Victim status tags appear.
-3. Action buttons are grouped by category.
-4. The player builds an ordered response sequence.
-5. The player submits the sequence.
+1. The start screen lets the player choose Practice Mode or Test Mode.
+2. A randomized scenario appears in one mobile-friendly card.
+3. The player chooses actions by category and builds an ordered response sequence.
+4. In Practice Mode, scenario-specific updates can appear after selected actions.
+5. The player clears or submits the sequence.
 6. The scoring module checks critical actions, priority order, optional actions, weak choices, and dangerous choices.
-7. The game shows detailed feedback.
+7. A result card shows the score, what went well, what was missed, and the suggested order.
 8. The player can retry or go to the next randomized scenario.
 
 ## How To Add Scenarios
@@ -121,6 +121,7 @@ Copy an existing scenario table and change:
 - `weakActions`
 - `commonMistakes`
 - `feedbackByAction`
+- `scenarioUpdatesByAction`
 - `successFeedback`
 - `instructorNote`
 - `sourceNote`
@@ -132,6 +133,14 @@ src/ReplicatedStorage/ActionDefinitions.luau
 ```
 
 Do not invent a new action id in a scenario unless you also add that action to `ActionDefinitions.luau`.
+
+`scenarioUpdatesByAction` is optional. Use it for short in-the-moment updates, for example:
+
+```lua
+scenarioUpdatesByAction = {
+  mistake_light_pressure_bleeding = "The bleeding is still soaking through.",
+}
+```
 
 ## Replace Scenario Data With Instructor Situation Cards
 

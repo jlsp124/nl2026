@@ -1,15 +1,16 @@
 --[[
 	FirstAidQuiz
 
-	This LocalScript builds the entire practice UI at runtime. No Roblox Studio
-	UI objects are required. That keeps the project simple to edit in GitHub,
-	Codex, or any text editor.
+	Mobile-first runtime UI for the Pool Deck Response MVP.
+	The scenario and scoring modules stay data-driven; this script only manages
+	screen flow, selected actions, and display.
 
 	Practice tool only. Follow your instructor, course materials, and local protocol.
 ]]
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 
 local FirstAidScenarios = require(ReplicatedStorage:WaitForChild("FirstAidScenarios"))
@@ -17,24 +18,27 @@ local ActionDefinitions = require(ReplicatedStorage:WaitForChild("ActionDefiniti
 local ScoringRules = require(ReplicatedStorage:WaitForChild("ScoringRules"))
 
 local DISCLAIMER = ActionDefinitions.PracticeDisclaimer
-local MAX_SELECTED_ACTIONS = 18
+local START_NOTE =
+	"I didn’t have the actual flashcards yet, so these are AI-made practice scenarios. Use your instructor’s cards/protocols when we get them."
+local MAX_SELECTED_ACTIONS = 14
 
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 
 local COLORS = {
-	background = Color3.fromRGB(9, 13, 20),
-	panel = Color3.fromRGB(17, 24, 36),
-	panelRaised = Color3.fromRGB(24, 34, 50),
-	panelSoft = Color3.fromRGB(31, 43, 62),
-	text = Color3.fromRGB(241, 245, 249),
-	muted = Color3.fromRGB(148, 163, 184),
-	accent = Color3.fromRGB(56, 189, 248),
-	accentDark = Color3.fromRGB(3, 105, 161),
-	good = Color3.fromRGB(34, 197, 94),
-	warn = Color3.fromRGB(245, 158, 11),
-	danger = Color3.fromRGB(248, 113, 113),
-	border = Color3.fromRGB(51, 65, 85),
+	bgTop = Color3.fromRGB(6, 14, 22),
+	bgBottom = Color3.fromRGB(3, 8, 14),
+	card = Color3.fromRGB(12, 22, 34),
+	cardRaised = Color3.fromRGB(18, 31, 47),
+	cardSoft = Color3.fromRGB(23, 39, 58),
+	text = Color3.fromRGB(244, 249, 255),
+	muted = Color3.fromRGB(154, 171, 191),
+	faint = Color3.fromRGB(91, 110, 133),
+	line = Color3.fromRGB(43, 65, 88),
+	accent = Color3.fromRGB(0, 224, 184),
+	accentDark = Color3.fromRGB(0, 156, 128),
+	warn = Color3.fromRGB(255, 197, 87),
+	danger = Color3.fromRGB(255, 90, 93),
 }
 
 local existingGui = playerGui:FindFirstChild("FirstAidQuizGui")
@@ -68,11 +72,11 @@ local function addCorner(instance, radius)
 	corner.Parent = instance
 end
 
-local function addStroke(instance, color, transparency)
+local function addStroke(instance, color, transparency, thickness)
 	local stroke = Instance.new("UIStroke")
 	stroke.Color = color
 	stroke.Transparency = transparency or 0
-	stroke.Thickness = 1
+	stroke.Thickness = thickness or 1
 	stroke.Parent = instance
 end
 
@@ -85,330 +89,141 @@ local function addPadding(instance, left, top, right, bottom)
 	padding.Parent = instance
 end
 
-local function clearContent(container)
+local function addListLayout(parent, padding)
+	return make("UIListLayout", {
+		FillDirection = Enum.FillDirection.Vertical,
+		HorizontalAlignment = Enum.HorizontalAlignment.Center,
+		Padding = UDim.new(0, padding),
+		SortOrder = Enum.SortOrder.LayoutOrder,
+	}, parent)
+end
+
+local function clearChildren(container)
 	for _, child in ipairs(container:GetChildren()) do
-		if not child:IsA("UIListLayout") and not child:IsA("UIPadding") and not child:IsA("UIGridLayout") then
+		if not child:IsA("UIListLayout") and not child:IsA("UIPadding") then
 			child:Destroy()
 		end
 	end
 end
 
-local function createLabel(parent, text, textSize, color, font, layoutOrder)
-	local label = make("TextLabel", {
+local function label(parent, text, size, color, font, order)
+	return make("TextLabel", {
+		AutomaticSize = Enum.AutomaticSize.Y,
 		BackgroundTransparency = 1,
 		Font = font or Enum.Font.Gotham,
-		LayoutOrder = layoutOrder or 1,
+		LayoutOrder = order or 1,
 		Size = UDim2.new(1, 0, 0, 0),
-		AutomaticSize = Enum.AutomaticSize.Y,
 		Text = text,
 		TextColor3 = color or COLORS.text,
-		TextSize = textSize,
+		TextSize = size,
 		TextWrapped = true,
 		TextXAlignment = Enum.TextXAlignment.Left,
 		TextYAlignment = Enum.TextYAlignment.Top,
 	}, parent)
-
-	return label
 end
 
-local function createButton(parent, text, backgroundColor, layoutOrder)
-	local button = make("TextButton", {
+local function button(parent, text, color, order)
+	local btn = make("TextButton", {
 		AutoButtonColor = true,
-		BackgroundColor3 = backgroundColor,
+		BackgroundColor3 = color,
 		Font = Enum.Font.GothamSemibold,
-		LayoutOrder = layoutOrder or 1,
-		Size = UDim2.new(1, 0, 0, 44),
+		LayoutOrder = order or 1,
+		Size = UDim2.new(1, 0, 0, 54),
 		Text = text,
 		TextColor3 = COLORS.text,
-		TextSize = 15,
+		TextSize = 16,
 		TextWrapped = true,
 	}, parent)
 
-	addCorner(button, 10)
-	addStroke(button, COLORS.border, 0.25)
+	addCorner(btn, 14)
+	addStroke(btn, COLORS.line, 0.35)
 
-	return button
+	return btn
 end
 
-local function createPanel(parent, layoutOrder)
-	local panel = make("Frame", {
-		BackgroundColor3 = COLORS.panel,
-		LayoutOrder = layoutOrder,
-		Size = UDim2.new(1, 0, 1, 0),
+local function smallPill(parent, text, active, order)
+	local pill = make("TextButton", {
+		AutoButtonColor = true,
+		BackgroundColor3 = active and COLORS.accentDark or COLORS.cardRaised,
+		Font = Enum.Font.GothamSemibold,
+		LayoutOrder = order or 1,
+		Size = UDim2.new(0, 128, 0, 42),
+		Text = text,
+		TextColor3 = active and COLORS.text or COLORS.muted,
+		TextSize = 13,
+		TextWrapped = true,
 	}, parent)
 
-	addCorner(panel, 16)
-	addStroke(panel, COLORS.border, 0.2)
-	addPadding(panel, 14, 14, 14, 14)
+	addCorner(pill, 999)
+	addStroke(pill, active and COLORS.accent or COLORS.line, active and 0.15 or 0.45)
 
-	return panel
+	return pill
+end
+
+local function section(parent, order)
+	local frame = make("Frame", {
+		AutomaticSize = Enum.AutomaticSize.Y,
+		BackgroundColor3 = COLORS.cardRaised,
+		LayoutOrder = order or 1,
+		Size = UDim2.new(1, 0, 0, 0),
+	}, parent)
+
+	addCorner(frame, 18)
+	addStroke(frame, COLORS.line, 0.45)
+	addPadding(frame, 14, 14, 14, 14)
+	addListLayout(frame, 10)
+
+	return frame
 end
 
 local root = make("Frame", {
-	BackgroundColor3 = COLORS.background,
+	BackgroundColor3 = COLORS.bgBottom,
 	Size = UDim2.fromScale(1, 1),
 }, screenGui)
 
-addPadding(root, 18, 18, 18, 12)
-
-make("UIListLayout", {
-	FillDirection = Enum.FillDirection.Vertical,
-	Padding = UDim.new(0, 12),
-	SortOrder = Enum.SortOrder.LayoutOrder,
+make("UIGradient", {
+	Color = ColorSequence.new({
+		ColorSequenceKeypoint.new(0, COLORS.bgTop),
+		ColorSequenceKeypoint.new(1, COLORS.bgBottom),
+	}),
+	Rotation = 90,
 }, root)
 
-local header = make("Frame", {
-	BackgroundColor3 = COLORS.panel,
-	LayoutOrder = 1,
-	Size = UDim2.new(1, 0, 0, 82),
-}, root)
-addCorner(header, 18)
-addStroke(header, COLORS.border, 0.2)
-addPadding(header, 18, 12, 18, 12)
-
-make("UIListLayout", {
-	FillDirection = Enum.FillDirection.Vertical,
-	Padding = UDim.new(0, 4),
-	SortOrder = Enum.SortOrder.LayoutOrder,
-}, header)
-
-createLabel(header, "Pool Deck Response", 28, COLORS.text, Enum.Font.GothamBold, 1)
-createLabel(
-	header,
-	"Single-player first aid / National Lifeguard practice trainer for British Columbia, Canada",
-	15,
-	COLORS.muted,
-	Enum.Font.Gotham,
-	2
-)
-
-local body = make("Frame", {
-	BackgroundTransparency = 1,
-	LayoutOrder = 2,
-	Size = UDim2.new(1, 0, 1, -142),
-}, root)
-
-make("UIListLayout", {
-	FillDirection = Enum.FillDirection.Horizontal,
-	Padding = UDim.new(0, 12),
-	SortOrder = Enum.SortOrder.LayoutOrder,
-}, body)
-
-local leftPane = make("Frame", {
-	BackgroundTransparency = 1,
-	LayoutOrder = 1,
-	Size = UDim2.new(0.58, -6, 1, 0),
-}, body)
-
-make("UIListLayout", {
-	FillDirection = Enum.FillDirection.Vertical,
-	Padding = UDim.new(0, 12),
-	SortOrder = Enum.SortOrder.LayoutOrder,
-}, leftPane)
-
-local scenarioPanel = createPanel(leftPane, 1)
-scenarioPanel.Size = UDim2.new(1, 0, 0.36, -6)
-
-make("UIListLayout", {
-	FillDirection = Enum.FillDirection.Vertical,
-	Padding = UDim.new(0, 10),
-	SortOrder = Enum.SortOrder.LayoutOrder,
-}, scenarioPanel)
-
-local scenarioMetaLabel = createLabel(scenarioPanel, "", 14, COLORS.accent, Enum.Font.GothamSemibold, 1)
-local scenarioTitleLabel = createLabel(scenarioPanel, "", 24, COLORS.text, Enum.Font.GothamBold, 2)
-local promptLabel = createLabel(scenarioPanel, "", 18, COLORS.text, Enum.Font.Gotham, 3)
-
-local tagsPanel = make("Frame", {
-	BackgroundColor3 = COLORS.panelRaised,
-	LayoutOrder = 4,
-	Size = UDim2.new(1, 0, 1, -150),
-}, scenarioPanel)
-addCorner(tagsPanel, 12)
-addPadding(tagsPanel, 10, 10, 10, 10)
-
-make("UIListLayout", {
-	FillDirection = Enum.FillDirection.Vertical,
-	Padding = UDim.new(0, 8),
-	SortOrder = Enum.SortOrder.LayoutOrder,
-}, tagsPanel)
-
-createLabel(tagsPanel, "Victim status", 14, COLORS.muted, Enum.Font.GothamSemibold, 1)
-
-local tagGridFrame = make("Frame", {
-	BackgroundTransparency = 1,
-	LayoutOrder = 2,
-	Size = UDim2.new(1, 0, 1, -24),
-}, tagsPanel)
-
-local tagGrid = make("UIGridLayout", {
-	CellPadding = UDim2.new(0, 8, 0, 8),
-	CellSize = UDim2.new(0, 170, 0, 30),
-	FillDirection = Enum.FillDirection.Horizontal,
-	SortOrder = Enum.SortOrder.LayoutOrder,
-}, tagGridFrame)
-
-local actionsPanel = createPanel(leftPane, 2)
-actionsPanel.Size = UDim2.new(1, 0, 0.64, -6)
-
-make("UIListLayout", {
-	FillDirection = Enum.FillDirection.Vertical,
-	Padding = UDim.new(0, 10),
-	SortOrder = Enum.SortOrder.LayoutOrder,
-}, actionsPanel)
-
-createLabel(actionsPanel, "Choose response actions", 20, COLORS.text, Enum.Font.GothamBold, 1)
-createLabel(
-	actionsPanel,
-	"Click actions in the order you would do them. Common mistakes are included on purpose so the trainer can catch them.",
-	14,
-	COLORS.muted,
-	Enum.Font.Gotham,
-	2
-)
-
-local actionScroll = make("ScrollingFrame", {
+local scroll = make("ScrollingFrame", {
 	Active = true,
 	AutomaticCanvasSize = Enum.AutomaticSize.Y,
 	BackgroundTransparency = 1,
 	BorderSizePixel = 0,
 	CanvasSize = UDim2.new(0, 0, 0, 0),
-	LayoutOrder = 3,
-	ScrollBarImageColor3 = COLORS.border,
-	ScrollBarThickness = 6,
-	Size = UDim2.new(1, 0, 1, -76),
-}, actionsPanel)
-
-make("UIListLayout", {
-	FillDirection = Enum.FillDirection.Vertical,
-	Padding = UDim.new(0, 12),
-	SortOrder = Enum.SortOrder.LayoutOrder,
-}, actionScroll)
-
-local rightPane = make("Frame", {
-	BackgroundTransparency = 1,
-	LayoutOrder = 2,
-	Size = UDim2.new(0.42, -6, 1, 0),
-}, body)
-
-make("UIListLayout", {
-	FillDirection = Enum.FillDirection.Vertical,
-	Padding = UDim.new(0, 12),
-	SortOrder = Enum.SortOrder.LayoutOrder,
-}, rightPane)
-
-local sequencePanel = createPanel(rightPane, 1)
-sequencePanel.Size = UDim2.new(1, 0, 0.34, -6)
-
-make("UIListLayout", {
-	FillDirection = Enum.FillDirection.Vertical,
-	Padding = UDim.new(0, 10),
-	SortOrder = Enum.SortOrder.LayoutOrder,
-}, sequencePanel)
-
-createLabel(sequencePanel, "Selected action sequence", 20, COLORS.text, Enum.Font.GothamBold, 1)
-createLabel(sequencePanel, "Click a selected row to remove it. Backspace removes the last action.", 13, COLORS.muted, Enum.Font.Gotham, 2)
-
-local sequenceScroll = make("ScrollingFrame", {
-	Active = true,
-	AutomaticCanvasSize = Enum.AutomaticSize.Y,
-	BackgroundTransparency = 1,
-	BorderSizePixel = 0,
-	CanvasSize = UDim2.new(0, 0, 0, 0),
-	LayoutOrder = 3,
-	ScrollBarImageColor3 = COLORS.border,
-	ScrollBarThickness = 6,
-	Size = UDim2.new(1, 0, 1, -58),
-}, sequencePanel)
-
-make("UIListLayout", {
-	FillDirection = Enum.FillDirection.Vertical,
-	Padding = UDim.new(0, 8),
-	SortOrder = Enum.SortOrder.LayoutOrder,
-}, sequenceScroll)
-
-local controlsPanel = createPanel(rightPane, 2)
-controlsPanel.Size = UDim2.new(1, 0, 0, 166)
-
-make("UIListLayout", {
-	FillDirection = Enum.FillDirection.Vertical,
-	Padding = UDim.new(0, 10),
-	SortOrder = Enum.SortOrder.LayoutOrder,
-}, controlsPanel)
-
-local scoreLabel = createLabel(controlsPanel, "Score: not submitted", 20, COLORS.text, Enum.Font.GothamBold, 1)
-
-local buttonGridFrame = make("Frame", {
-	BackgroundTransparency = 1,
-	LayoutOrder = 2,
-	Size = UDim2.new(1, 0, 1, -36),
-}, controlsPanel)
-
-make("UIGridLayout", {
-	CellPadding = UDim2.new(0, 8, 0, 8),
-	CellSize = UDim2.new(0.5, -4, 0, 42),
-	FillDirection = Enum.FillDirection.Horizontal,
-	SortOrder = Enum.SortOrder.LayoutOrder,
-}, buttonGridFrame)
-
-local submitButton = createButton(buttonGridFrame, "Submit", COLORS.accentDark, 1)
-local clearButton = createButton(buttonGridFrame, "Clear", COLORS.panelSoft, 2)
-local retryButton = createButton(buttonGridFrame, "Retry", COLORS.panelSoft, 3)
-local nextButton = createButton(buttonGridFrame, "Next scenario", COLORS.panelSoft, 4)
-
-local feedbackPanel = createPanel(rightPane, 3)
-feedbackPanel.Size = UDim2.new(1, 0, 1, -512)
-
-make("UIListLayout", {
-	FillDirection = Enum.FillDirection.Vertical,
-	Padding = UDim.new(0, 10),
-	SortOrder = Enum.SortOrder.LayoutOrder,
-}, feedbackPanel)
-
-createLabel(feedbackPanel, "Feedback", 20, COLORS.text, Enum.Font.GothamBold, 1)
-
-local feedbackScroll = make("ScrollingFrame", {
-	Active = true,
-	AutomaticCanvasSize = Enum.AutomaticSize.Y,
-	BackgroundTransparency = 1,
-	BorderSizePixel = 0,
-	CanvasSize = UDim2.new(0, 0, 0, 0),
-	LayoutOrder = 2,
-	ScrollBarImageColor3 = COLORS.border,
-	ScrollBarThickness = 6,
-	Size = UDim2.new(1, 0, 1, -36),
-}, feedbackPanel)
-
-make("UIListLayout", {
-	FillDirection = Enum.FillDirection.Vertical,
-	Padding = UDim.new(0, 8),
-	SortOrder = Enum.SortOrder.LayoutOrder,
-}, feedbackScroll)
-
-local footer = make("Frame", {
-	BackgroundTransparency = 1,
-	LayoutOrder = 3,
-	Size = UDim2.new(1, 0, 0, 30),
+	ScrollBarImageColor3 = COLORS.line,
+	ScrollBarThickness = 4,
+	Size = UDim2.fromScale(1, 1),
 }, root)
 
-local footerText = createLabel(
-	footer,
-	DISCLAIMER .. " Not official medical, legal, or certification guidance.",
-	13,
-	COLORS.muted,
-	Enum.Font.Gotham,
-	1
-)
-footerText.TextXAlignment = Enum.TextXAlignment.Center
+addPadding(scroll, 18, 24, 18, 24)
 
-local rng = Random.new()
+local screenStack = make("Frame", {
+	AutomaticSize = Enum.AutomaticSize.Y,
+	BackgroundTransparency = 1,
+	Size = UDim2.new(1, 0, 0, 0),
+}, scroll)
+
+local stackLayout = addListLayout(screenStack, 0)
+stackLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+
 local scenarioOrder = {}
 local scenarioIndex = 1
 local currentScenario = nil
 local selectedActionIds = {}
+local selectedCategory = "Assessment"
+local currentMode = "Practice"
+local latestScenarioUpdate = ""
+local renderQuizScreen
+local renderResultScreen
 
 local function shuffleScenarios()
 	local shuffled = {}
+	local rng = Random.new()
 
 	for index, scenario in ipairs(FirstAidScenarios.List) do
 		shuffled[index] = scenario
@@ -422,228 +237,420 @@ local function shuffleScenarios()
 	return shuffled
 end
 
-local function feedbackColorForRating(rating)
-	if rating == "Strong response" then
-		return COLORS.good
+local function actionLabel(actionId)
+	return ActionDefinitions.getActionLabel(actionId)
+end
+
+local function labelsFor(actionIds)
+	local lines = {}
+
+	for index, actionId in ipairs(actionIds or {}) do
+		table.insert(lines, string.format("%d. %s", index, actionLabel(actionId)))
 	end
 
-	if rating == "Unsafe choice selected" or rating == "Missed critical priority" then
-		return COLORS.danger
+	return lines
+end
+
+local function makeSet(list)
+	local set = {}
+
+	for _, value in ipairs(list or {}) do
+		set[value] = true
 	end
 
-	return COLORS.warn
+	return set
 end
 
-local function addFeedbackLine(text, color, font)
-	local label = createLabel(feedbackScroll, text, 14, color or COLORS.text, font or Enum.Font.Gotham, #feedbackScroll:GetChildren() + 1)
-	label.BackgroundColor3 = COLORS.panelRaised
-	label.BackgroundTransparency = 0
-	label.Size = UDim2.new(1, -6, 0, 0)
-	addCorner(label, 10)
-	addPadding(label, 10, 8, 10, 8)
-	return label
-end
+local function getSuggestedOrderText()
+	local lines = labelsFor(currentScenario.recommendedSequence)
 
-local function renderDefaultFeedback()
-	clearContent(feedbackScroll)
-	addFeedbackLine("Build an ordered response, then submit for scoring.", COLORS.muted)
-	addFeedbackLine("Keyboard: Enter submits, C clears, R retries, N moves next, Backspace removes the last action.", COLORS.muted)
-	addFeedbackLine(DISCLAIMER, COLORS.muted)
-end
-
-local function renderFeedback(result)
-	clearContent(feedbackScroll)
-
-	addFeedbackLine(result.rating .. " - " .. tostring(result.score) .. "/100", feedbackColorForRating(result.rating), Enum.Font.GothamBold)
-
-	for _, line in ipairs(result.feedbackLines) do
-		addFeedbackLine("- " .. line, COLORS.text)
-	end
-end
-
-local function refreshSequenceList()
-	clearContent(sequenceScroll)
-
-	if #selectedActionIds == 0 then
-		local emptyLabel = createLabel(sequenceScroll, "No actions selected yet.", 15, COLORS.muted, Enum.Font.Gotham, 1)
-		emptyLabel.BackgroundColor3 = COLORS.panelRaised
-		emptyLabel.BackgroundTransparency = 0
-		emptyLabel.Size = UDim2.new(1, -6, 0, 0)
-		addCorner(emptyLabel, 10)
-		addPadding(emptyLabel, 10, 8, 10, 8)
-		return
+	if #lines == 0 then
+		return "No suggested order is available for this starter scenario."
 	end
 
-	for index, actionId in ipairs(selectedActionIds) do
-		local actionLabel = ActionDefinitions.getActionLabel(actionId)
-		local row = createButton(
-			sequenceScroll,
-			string.format("%02d. %s", index, actionLabel),
-			COLORS.panelRaised,
-			index
-		)
-		row.TextXAlignment = Enum.TextXAlignment.Left
+	return table.concat(lines, "\n")
+end
 
-		row.MouseButton1Click:Connect(function()
-			table.remove(selectedActionIds, index)
-			scoreLabel.Text = "Score: not submitted"
-			renderDefaultFeedback()
-			refreshSequenceList()
-		end)
+local function getWhatWentWellText(result)
+	local criticalSet = makeSet(currentScenario.criticalActions)
+	local optionalSet = makeSet(currentScenario.optionalGoodActions)
+	local dangerousSet = makeSet(currentScenario.dangerousActions)
+	local weakSet = makeSet(currentScenario.weakActions)
+	local seen = {}
+	local goodLines = {}
+
+	for _, actionId in ipairs(result.selectedActionIds or {}) do
+		if seen[actionId] ~= true and (criticalSet[actionId] or optionalSet[actionId]) and not dangerousSet[actionId] and not weakSet[actionId] then
+			seen[actionId] = true
+			table.insert(goodLines, "- " .. actionLabel(actionId))
+		end
 	end
-end
 
-local function resetForScenario()
-	selectedActionIds = {}
-	scoreLabel.Text = "Score: not submitted"
-	refreshSequenceList()
-	renderDefaultFeedback()
-end
-
-local function renderStatusTags()
-	clearContent(tagGridFrame)
-	tagGrid.Parent = nil
-	tagGrid.Parent = tagGridFrame
-
-	for index, tagText in ipairs(currentScenario.victimStatusTags or {}) do
-		local tag = make("TextLabel", {
-			BackgroundColor3 = COLORS.panelSoft,
-			Font = Enum.Font.GothamSemibold,
-			LayoutOrder = index,
-			Size = UDim2.new(0, 170, 0, 30),
-			Text = tagText,
-			TextColor3 = COLORS.text,
-			TextSize = 13,
-			TextWrapped = true,
-		}, tagGridFrame)
-		addCorner(tag, 999)
-		addStroke(tag, COLORS.border, 0.35)
+	if #goodLines == 0 then
+		return "No strong actions were scored yet. Retry and start with the highest-priority checks."
 	end
+
+	return table.concat(goodLines, "\n")
 end
 
-local function loadScenario(index)
-	currentScenario = scenarioOrder[index]
+local function getWhatMissedText(result)
+	local missedLines = {}
 
-	scenarioMetaLabel.Text = string.format(
-		"Scenario %d of %d - %s",
-		index,
-		#scenarioOrder,
-		currentScenario.category
+	for _, text in ipairs(result.missedCriticalActions or {}) do
+		table.insert(missedLines, "- Missed: " .. text)
+	end
+
+	for _, text in ipairs(result.dangerousChoices or {}) do
+		table.insert(missedLines, "- Dangerous: " .. text)
+	end
+
+	for _, text in ipairs(result.weakChoices or {}) do
+		table.insert(missedLines, "- Weak/incomplete: " .. text)
+	end
+
+	for _, text in ipairs(result.orderIssues or {}) do
+		table.insert(missedLines, "- Order: " .. text)
+	end
+
+	if #missedLines == 0 then
+		return "No critical misses were flagged. Check the suggested order with your instructor's protocol."
+	end
+
+	return table.concat(missedLines, "\n")
+end
+
+local function createCard()
+	clearChildren(screenStack)
+
+	local card = make("Frame", {
+		AutomaticSize = Enum.AutomaticSize.Y,
+		BackgroundColor3 = COLORS.card,
+		Size = UDim2.new(0.94, 0, 0, 0),
+	}, screenStack)
+
+	make("UISizeConstraint", {
+		MaxSize = Vector2.new(560, 10000),
+		MinSize = Vector2.new(280, 0),
+	}, card)
+
+	addCorner(card, 26)
+	addStroke(card, COLORS.line, 0.25, 1.2)
+	addPadding(card, 18, 18, 18, 18)
+	addListLayout(card, 14)
+
+	card.BackgroundTransparency = 0.08
+	card.Position = UDim2.fromOffset(0, 12)
+	TweenService:Create(
+		card,
+		TweenInfo.new(0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+		{ BackgroundTransparency = 0, Position = UDim2.fromOffset(0, 0) }
+	):Play()
+
+	return card
+end
+
+local function renderStartScreen()
+	local card = createCard()
+
+	local eyebrow = label(card, "MVP practice build", 13, COLORS.accent, Enum.Font.GothamSemibold, 1)
+	eyebrow.TextXAlignment = Enum.TextXAlignment.Center
+
+	local title = label(card, "Pool Deck Response", 34, COLORS.text, Enum.Font.GothamBold, 2)
+	title.TextXAlignment = Enum.TextXAlignment.Center
+
+	local subtitle = label(card, "Quick first aid scenario practice", 18, COLORS.muted, Enum.Font.GothamSemibold, 3)
+	subtitle.TextXAlignment = Enum.TextXAlignment.Center
+
+	local noteBox = section(card, 4)
+	noteBox.BackgroundColor3 = COLORS.cardSoft
+	label(noteBox, START_NOTE, 16, COLORS.text, Enum.Font.Gotham, 1)
+	label(noteBox, DISCLAIMER, 13, COLORS.muted, Enum.Font.Gotham, 2)
+
+	local practiceButton = button(card, "Practice Mode", COLORS.accentDark, 5)
+	local testButton = button(card, "Test Mode", COLORS.cardSoft, 6)
+
+	label(
+		card,
+		"Practice shows small scenario updates after selected actions. Test keeps the same scoring but avoids coaching until submit.",
+		13,
+		COLORS.muted,
+		Enum.Font.Gotham,
+		7
 	)
-	scenarioTitleLabel.Text = currentScenario.title
-	promptLabel.Text = currentScenario.prompt
 
-	renderStatusTags()
-	resetForScenario()
-end
-
-local function nextScenario()
-	scenarioIndex = scenarioIndex + 1
-
-	if scenarioIndex > #scenarioOrder then
+	practiceButton.MouseButton1Click:Connect(function()
+		currentMode = "Practice"
 		scenarioOrder = shuffleScenarios()
 		scenarioIndex = 1
+		currentScenario = scenarioOrder[scenarioIndex]
+		selectedActionIds = {}
+		selectedCategory = "Assessment"
+		latestScenarioUpdate = "Choose your first action."
+		renderQuizScreen()
+	end)
+
+	testButton.MouseButton1Click:Connect(function()
+		currentMode = "Test"
+		scenarioOrder = shuffleScenarios()
+		scenarioIndex = 1
+		currentScenario = scenarioOrder[scenarioIndex]
+		selectedActionIds = {}
+		selectedCategory = "Assessment"
+		latestScenarioUpdate = "Choose your first action."
+		renderQuizScreen()
+	end)
+end
+
+renderQuizScreen = function()
+	local card = createCard()
+
+	local progress = label(
+		card,
+		string.format("%s Mode  -  Scenario %d of %d", currentMode, scenarioIndex, #scenarioOrder),
+		13,
+		COLORS.accent,
+		Enum.Font.GothamSemibold,
+		1
+	)
+	progress.TextXAlignment = Enum.TextXAlignment.Center
+
+	local progressTrack = make("Frame", {
+		BackgroundColor3 = COLORS.cardSoft,
+		LayoutOrder = 2,
+		Size = UDim2.new(1, 0, 0, 8),
+	}, card)
+	addCorner(progressTrack, 999)
+
+	local progressFill = make("Frame", {
+		BackgroundColor3 = COLORS.accent,
+		Size = UDim2.new(scenarioIndex / #scenarioOrder, 0, 1, 0),
+	}, progressTrack)
+	addCorner(progressFill, 999)
+
+	local scenarioBlock = section(card, 3)
+	scenarioBlock.BackgroundColor3 = Color3.fromRGB(11, 24, 37)
+
+	label(scenarioBlock, currentScenario.title, 25, COLORS.text, Enum.Font.GothamBold, 1)
+	label(scenarioBlock, currentScenario.prompt, 16, COLORS.text, Enum.Font.Gotham, 2)
+
+	local question = label(card, "What do you do next?", 22, COLORS.text, Enum.Font.GothamBold, 4)
+	question.TextXAlignment = Enum.TextXAlignment.Center
+
+	local updateText = latestScenarioUpdate
+	if currentMode == "Test" and #selectedActionIds > 0 then
+		updateText = "Action recorded. Continue your sequence."
 	end
 
-	loadScenario(scenarioIndex)
-end
+	local update = label(card, updateText, 14, COLORS.warn, Enum.Font.GothamSemibold, 5)
+	update.TextXAlignment = Enum.TextXAlignment.Center
 
-local function retryScenario()
-	resetForScenario()
-end
+	local selectedBlock = section(card, 6)
+	selectedBlock.BackgroundColor3 = COLORS.cardRaised
+	label(selectedBlock, "Your actions in order", 15, COLORS.muted, Enum.Font.GothamSemibold, 1)
 
-local function clearSequence()
-	selectedActionIds = {}
-	scoreLabel.Text = "Score: not submitted"
-	refreshSequenceList()
-	renderDefaultFeedback()
-end
+	if #selectedActionIds == 0 then
+		label(selectedBlock, "No actions selected yet.", 15, COLORS.faint, Enum.Font.Gotham, 2)
+	else
+		for index, actionId in ipairs(selectedActionIds) do
+			local row = button(selectedBlock, string.format("%d. %s", index, actionLabel(actionId)), COLORS.cardSoft, index + 1)
+			row.Size = UDim2.new(1, 0, 0, 42)
+			row.TextXAlignment = Enum.TextXAlignment.Left
 
-local function submitSequence()
-	if currentScenario == nil then
-		return
-	end
-
-	local result = ScoringRules.scoreScenario(currentScenario, selectedActionIds)
-	scoreLabel.Text = string.format("Score: %d/100 - %s", result.score, result.rating)
-	renderFeedback(result)
-end
-
-local function addActionToSequence(actionId)
-	if #selectedActionIds >= MAX_SELECTED_ACTIONS then
-		clearContent(feedbackScroll)
-		addFeedbackLine("Maximum sequence length reached. Submit, clear, or remove an action.", COLORS.warn)
-		return
-	end
-
-	table.insert(selectedActionIds, actionId)
-	scoreLabel.Text = "Score: not submitted"
-	renderDefaultFeedback()
-	refreshSequenceList()
-end
-
-local function buildActionButtons()
-	for categoryIndex, category in ipairs(ActionDefinitions.CategoryOrder) do
-		local section = make("Frame", {
-			AutomaticSize = Enum.AutomaticSize.Y,
-			BackgroundColor3 = COLORS.panelRaised,
-			LayoutOrder = categoryIndex,
-			Size = UDim2.new(1, -6, 0, 0),
-		}, actionScroll)
-		addCorner(section, 14)
-		addPadding(section, 10, 10, 10, 10)
-
-		make("UIListLayout", {
-			FillDirection = Enum.FillDirection.Vertical,
-			Padding = UDim.new(0, 8),
-			SortOrder = Enum.SortOrder.LayoutOrder,
-		}, section)
-
-		createLabel(section, category, 16, COLORS.accent, Enum.Font.GothamBold, 1)
-
-		for actionIndex, action in ipairs(ActionDefinitions.getActionsForCategory(category)) do
-			local color = COLORS.panelSoft
-
-			if category == "Common mistakes" then
-				color = Color3.fromRGB(88, 47, 47)
-			end
-
-			local actionButton = createButton(section, action.label, color, actionIndex + 1)
-			actionButton.MouseButton1Click:Connect(function()
-				addActionToSequence(action.id)
+			row.MouseButton1Click:Connect(function()
+				table.remove(selectedActionIds, index)
+				latestScenarioUpdate = "Removed one action. Choose what comes next."
+				renderQuizScreen()
 			end)
 		end
 	end
+
+	local tabs = make("Frame", {
+		AutomaticSize = Enum.AutomaticSize.Y,
+		BackgroundTransparency = 1,
+		LayoutOrder = 7,
+		Size = UDim2.new(1, 0, 0, 0),
+	}, card)
+	local tabGrid = make("UIGridLayout", {
+		CellPadding = UDim2.new(0, 8, 0, 8),
+		CellSize = UDim2.new(0.5, -4, 0, 42),
+		SortOrder = Enum.SortOrder.LayoutOrder,
+	}, tabs)
+	tabGrid.Parent = tabs
+
+	for index, category in ipairs(ActionDefinitions.CategoryOrder) do
+		local shortName = category
+		if category == "Help / equipment" then
+			shortName = "Help"
+		elseif category == "Common mistakes" then
+			shortName = "Mistakes"
+		end
+
+		local categoryButton = smallPill(tabs, shortName, selectedCategory == category, index)
+		categoryButton.Size = UDim2.new(1, 0, 0, 42)
+		categoryButton.MouseButton1Click:Connect(function()
+			selectedCategory = category
+			renderQuizScreen()
+		end)
+	end
+
+	local actionsBlock = section(card, 8)
+	actionsBlock.BackgroundColor3 = Color3.fromRGB(9, 18, 29)
+	label(actionsBlock, selectedCategory, 15, COLORS.accent, Enum.Font.GothamBold, 1)
+
+	for index, action in ipairs(ActionDefinitions.getActionsForCategory(selectedCategory)) do
+		local color = COLORS.cardSoft
+		if selectedCategory == "Common mistakes" then
+			color = Color3.fromRGB(66, 35, 41)
+		end
+
+		local actionButton = button(actionsBlock, action.label, color, index + 1)
+		actionButton.MouseButton1Click:Connect(function()
+			if #selectedActionIds >= MAX_SELECTED_ACTIONS then
+				latestScenarioUpdate = "That is enough actions for one answer. Submit or clear before adding more."
+				renderQuizScreen()
+				return
+			end
+
+			table.insert(selectedActionIds, action.id)
+
+			local updateByAction = currentScenario.scenarioUpdatesByAction or {}
+			if currentMode == "Practice" and updateByAction[action.id] ~= nil then
+				latestScenarioUpdate = updateByAction[action.id]
+			elseif currentMode == "Practice" then
+				latestScenarioUpdate = "Action added. Choose what comes next."
+			else
+				latestScenarioUpdate = "Action recorded. Continue your sequence."
+			end
+
+			renderQuizScreen()
+		end)
+	end
+
+	local controls = make("Frame", {
+		AutomaticSize = Enum.AutomaticSize.Y,
+		BackgroundTransparency = 1,
+		LayoutOrder = 9,
+		Size = UDim2.new(1, 0, 0, 0),
+	}, card)
+
+	make("UIGridLayout", {
+		CellPadding = UDim2.new(0, 10, 0, 0),
+		CellSize = UDim2.new(0.5, -5, 0, 56),
+		SortOrder = Enum.SortOrder.LayoutOrder,
+	}, controls)
+
+	local clearButton = button(controls, "Clear", COLORS.cardSoft, 1)
+	local submitButton = button(controls, "Submit", COLORS.accentDark, 2)
+
+	clearButton.MouseButton1Click:Connect(function()
+		selectedActionIds = {}
+		latestScenarioUpdate = "Cleared. Choose your first action."
+		renderQuizScreen()
+	end)
+
+	submitButton.MouseButton1Click:Connect(function()
+		renderResultScreen(ScoringRules.scoreScenario(currentScenario, selectedActionIds))
+	end)
 end
 
-submitButton.MouseButton1Click:Connect(submitSequence)
-clearButton.MouseButton1Click:Connect(clearSequence)
-retryButton.MouseButton1Click:Connect(retryScenario)
-nextButton.MouseButton1Click:Connect(nextScenario)
+renderResultScreen = function(result)
+	local card = createCard()
+
+	local progress = label(
+		card,
+		string.format("%s Mode  -  Scenario %d of %d", currentMode, scenarioIndex, #scenarioOrder),
+		13,
+		COLORS.accent,
+		Enum.Font.GothamSemibold,
+		1
+	)
+	progress.TextXAlignment = Enum.TextXAlignment.Center
+
+	local scoreColor = COLORS.warn
+	if result.rating == "Strong response" then
+		scoreColor = COLORS.accent
+	elseif result.rating == "Unsafe choice selected" or result.rating == "Missed critical priority" then
+		scoreColor = COLORS.danger
+	end
+
+	local score = label(card, string.format("%d/100", result.score), 44, scoreColor, Enum.Font.GothamBold, 2)
+	score.TextXAlignment = Enum.TextXAlignment.Center
+
+	local rating = label(card, result.rating, 20, COLORS.text, Enum.Font.GothamBold, 3)
+	rating.TextXAlignment = Enum.TextXAlignment.Center
+
+	local well = section(card, 4)
+	label(well, "What you did well", 17, COLORS.accent, Enum.Font.GothamBold, 1)
+	label(well, getWhatWentWellText(result), 15, COLORS.text, Enum.Font.Gotham, 2)
+
+	local missed = section(card, 5)
+	label(missed, "What you missed", 17, COLORS.warn, Enum.Font.GothamBold, 1)
+	label(missed, getWhatMissedText(result), 15, COLORS.text, Enum.Font.Gotham, 2)
+
+	local suggested = section(card, 6)
+	label(suggested, "Suggested order", 17, COLORS.accent, Enum.Font.GothamBold, 1)
+	label(suggested, getSuggestedOrderText(), 15, COLORS.text, Enum.Font.Gotham, 2)
+	label(suggested, "Check your instructor's protocol before treating this as correct.", 13, COLORS.muted, Enum.Font.Gotham, 3)
+
+	local controls = make("Frame", {
+		AutomaticSize = Enum.AutomaticSize.Y,
+		BackgroundTransparency = 1,
+		LayoutOrder = 7,
+		Size = UDim2.new(1, 0, 0, 0),
+	}, card)
+
+	make("UIGridLayout", {
+		CellPadding = UDim2.new(0, 10, 0, 0),
+		CellSize = UDim2.new(0.5, -5, 0, 56),
+		SortOrder = Enum.SortOrder.LayoutOrder,
+	}, controls)
+
+	local retryButton = button(controls, "Retry", COLORS.cardSoft, 1)
+	local nextButton = button(controls, "Next", COLORS.accentDark, 2)
+
+	retryButton.MouseButton1Click:Connect(function()
+		selectedActionIds = {}
+		latestScenarioUpdate = "Choose your first action."
+		renderQuizScreen()
+	end)
+
+	nextButton.MouseButton1Click:Connect(function()
+		scenarioIndex += 1
+		if scenarioIndex > #scenarioOrder then
+			scenarioOrder = shuffleScenarios()
+			scenarioIndex = 1
+		end
+
+		currentScenario = scenarioOrder[scenarioIndex]
+		selectedActionIds = {}
+		selectedCategory = "Assessment"
+		latestScenarioUpdate = "Choose your first action."
+		renderQuizScreen()
+	end)
+end
 
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
 	if gameProcessed then
 		return
 	end
 
+	if currentScenario == nil then
+		return
+	end
+
 	if input.KeyCode == Enum.KeyCode.Return or input.KeyCode == Enum.KeyCode.KeypadEnter then
-		submitSequence()
+		renderResultScreen(ScoringRules.scoreScenario(currentScenario, selectedActionIds))
 	elseif input.KeyCode == Enum.KeyCode.C then
-		clearSequence()
-	elseif input.KeyCode == Enum.KeyCode.R then
-		retryScenario()
-	elseif input.KeyCode == Enum.KeyCode.N then
-		nextScenario()
+		selectedActionIds = {}
+		latestScenarioUpdate = "Cleared. Choose your first action."
+		renderQuizScreen()
 	elseif input.KeyCode == Enum.KeyCode.Backspace then
 		if #selectedActionIds > 0 then
 			table.remove(selectedActionIds, #selectedActionIds)
-			scoreLabel.Text = "Score: not submitted"
-			renderDefaultFeedback()
-			refreshSequenceList()
+			latestScenarioUpdate = "Removed one action. Choose what comes next."
+			renderQuizScreen()
 		end
 	end
 end)
 
-buildActionButtons()
-scenarioOrder = shuffleScenarios()
-loadScenario(scenarioIndex)
+renderStartScreen()
