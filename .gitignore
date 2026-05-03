@@ -1,0 +1,17 @@
+# Rojo / Roblox build outputs
+build.rbxlx
+*.rbxl
+*.rbxlx
+*.rbxm
+*.rbxmx
+sourcemap.json
+
+# Local editor and OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Local secrets or machine-only config
+.env
+.env.*

@@ -1,0 +1,27 @@
+{
+  "name": "pool-deck-response",
+  "tree": {
+    "$className": "DataModel",
+    "ReplicatedStorage": {
+      "$className": "ReplicatedStorage",
+      "FirstAidScenarios": {
+        "$path": "src/ReplicatedStorage/FirstAidScenarios.luau"
+      },
+      "ActionDefinitions": {
+        "$path": "src/ReplicatedStorage/ActionDefinitions.luau"
+      },
+      "ScoringRules": {
+        "$path": "src/ReplicatedStorage/ScoringRules.luau"
+      }
+    },
+    "StarterPlayer": {
+      "$className": "StarterPlayer",
+      "StarterPlayerScripts": {
+        "$className": "StarterPlayerScripts",
+        "FirstAidQuiz": {
+          "$path": "src/StarterPlayer/StarterPlayerScripts/FirstAidQuiz.client.luau"
+        }
+      }
+    }
+  }
+}
