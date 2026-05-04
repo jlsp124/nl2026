@@ -3,7 +3,7 @@
 
   const data = window.POOL_DECK_DATA;
   const app = document.querySelector("#app");
-  const startNote = "I didn\u2019t have the flashcards so I just got GPT to make scenarios.";
+  const startNote = "Based on our first aid practice cards.";
 
   const state = {
     mode: "practice",
@@ -759,6 +759,10 @@
     const selectedAnswer = question.choices.find((choice) => choice.id === state.selectedAnswerId);
     const correctAnswer = question.choices.find((choice) => choice.correct);
     const answered = Boolean(state.selectedAnswerId);
+    const sourceTitle = question.sourceCardTitle || question.topic || "Practice card";
+    const relatedTags = question.topicTags || question.relatedTags || [];
+    const miniCase = question.miniCase || question.prompt || "";
+    const questionText = question.question || "";
 
     app.innerHTML = `
       <section class="card question-card">
@@ -773,8 +777,9 @@
         </div>
 
         <section class="scenario-panel compact-scenario">
-          <p class="stage-kicker">Question ${state.questionIndex + 1} of ${state.questionQueue.length} - ${escapeHtml(question.topic)}</p>
-          <h2 class="scenario-title">${escapeHtml(question.prompt)}</h2>
+          <p class="stage-kicker">Question ${state.questionIndex + 1} of ${state.questionQueue.length} - ${escapeHtml(sourceTitle)}</p>
+          <h2 class="scenario-title">${escapeHtml(miniCase)}</h2>
+          ${questionText ? `<p class="scenario-prompt">${escapeHtml(questionText)}</p>` : ""}
         </section>
 
         <section class="stage-panel">
@@ -814,7 +819,7 @@
                     .filter((choice) => !choice.correct)
                     .map((choice) => `<p><strong>${escapeHtml(choice.text)}</strong><br>${escapeHtml(choice.explanation)}</p>`)
                     .join("")}
-                  <p class="tiny">Related: ${escapeHtml(question.relatedTags.join(", "))}</p>
+                  <p class="tiny">Source: ${escapeHtml(sourceTitle)} | Related: ${escapeHtml(relatedTags.join(", "))}</p>
                 </div>
               `
               : ""

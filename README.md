@@ -1,117 +1,55 @@
 # Pool Deck Response
 
-Pool Deck Response is a static GitHub Pages first-aid scenario practice app. It started as a Roblox/Rojo MVP, then was ported to plain web files so it is easier to edit, publish, and replace with class flashcards later.
+Pool Deck Response is a static GitHub Pages first-aid scenario practice app for class practice.
 
 GitHub repo: https://github.com/jlsp124/nl2026
 
-The Roblox prototype is preserved on the `roblox-mvp` branch. The `main` branch is the GitHub Pages web app.
+The `main` branch is the web app. The Roblox prototype remains preserved on the `roblox-mvp` branch.
 
-## What It Is
+## Source Of Truth
 
-- A casual class-practice first-aid trainer.
-- A static website with no backend, no framework, and no build step.
-- A way to practice order of care, weak choices, dangerous choices, equipment timing, reassessment, and close distractors.
-- A place to draft instructor-review-ready scenario rules before the real flashcards are available.
-
-The start screen note intentionally stays casual:
+App content is now based on:
 
 ```text
-“I didn’t have the flashcards so I just got GPT to make scenarios.”
+source/First Aid Practise Cards.docx
+```
+
+The old GPT placeholder scenarios were replaced with practice-card scenarios and Question Mode items generated from that document. The app still keeps its casual mobile-first card UI, staged action selection, selected order, review/reorder, scoring, and feedback.
+
+Start-screen note:
+
+```text
+Based on our first aid practice cards.
 ```
 
 ## Study Modes
 
-### Practice Mode
+- `Practice Mode`: staged scenario practice with coaching updates.
+- `Test Mode`: same staged scenarios and 100-point scoring, but feedback waits until submit.
+- `Question Mode`: harder mini-case questions with close distractors from other cards.
 
-Practice Mode walks through staged scenario cards and gives small coaching updates while you choose actions.
+Scenario stages are:
 
-Flow:
+1. Assessment
+2. Call EMS / get help
+3. Treatment
+4. Monitor / reassess
+5. Review / Submit
 
-1. Read the scenario.
-2. Choose actions through the staged cards.
-3. Selected actions leave the available choices and move into `Your order`.
-4. Continue to `Review / Submit`.
-5. Reorder with drag/drop where supported, or use `Up`, `Down`, and `Remove`.
-6. Submit for score and plain-language feedback.
+## Content Counts
 
-### Test Mode
+- 32 source-card scenarios
+- 32 Question Mode items
+- 134 action choices
 
-Test Mode uses the same scenarios and scoring, but avoids coaching until submit.
+Cards currently marked for instructor review:
 
-### Question Mode
+- `Nose Injuries`: source wording repeats ear-injury text.
+- `Radiation Burns`: source treatment repeats electrical-burn text.
 
-Question Mode is a faster trap-question drill. It shows one mini-case or tricky question with 3-4 close answer choices.
+See `source-summary.md` for notes.
 
-After answering, it shows:
-
-- Correct answer.
-- Why the correct answer fits.
-- Why each wrong answer is wrong.
-- Related scenario topic/tag.
-- Simple score such as `4/5 correct`.
-
-Question data currently lives in `scenarios.js` beside the scenario data.
-
-## Current Scenario Flow
-
-Scenario mode uses these stages:
-
-1. Primary assessment
-2. ABC / life threats
-3. Help / EMS / equipment
-4. Treatment
-5. Secondary assessment / ongoing care
-6. Review / Submit
-
-The user does not manually click category tabs. Each scenario decides which actions appear in each stage.
-
-## First-Aid Content Audit Notes
-
-The starter content is organized around source-aligned concepts that still need instructor review:
-
-- Primary assessment: scene safety, responsiveness/level of consciousness, airway and breathing, circulation/obvious life threats, major bleeding, and mechanism of injury.
-- Secondary assessment: vital signs, head-to-toe check, history/SAMPLE-style questions, reassessment, and monitoring.
-- CPR/AED: CPR/AED is scored as correct only when the victim is unresponsive and not breathing normally.
-- Severe bleeding: firm direct pressure, maintaining/reinforcing pressure, early help/EMS for heavy bleeding, and shock care after bleeding control starts.
-- Burns: remove from the burn source if safe, cool first with clean cool water, get a first aid kit/clean dressing, then cover loosely after cooling.
-- Heat illness: heat exhaustion emphasizes cooler area, rest, loosen/remove heat-trapping gear, fluids only if awake/able, and monitoring; heat stroke suspicion emphasizes EMS and active cooling.
-- Fractures: basics first, support/immobilize, avoid unnecessary movement, check circulation/sensation/movement if taught, get help depending severity, and monitor.
-- Asthma/breathing difficulty: breathing check, position of comfort, prescribed inhaler/action plan if available and allowed, EMS if severe/not improving, and reassessment.
-- Anaphylaxis: airway/breathing concerns, early EMS, epinephrine auto-injector help if available/allowed, and monitoring.
-
-Source basis is summarized in `contentSources` inside `scenarios.js`. The gameplay UI does not show citations or heavy disclaimer wording.
-
-Reference pages used for alignment:
-
-- American Red Cross assessment guidance: https://guidelines.redcross.org/guidelines-database/assessment/
-- American Red Cross CPR steps: https://www.redcross.org/take-a-class/cpr/performing-cpr/cpr-steps
-- American Red Cross life-threatening external bleeding: https://www.redcross.org/take-a-class/resources/learn-first-aid/bleeding-life-threatening-external
-- American Red Cross burns: https://www.redcross.org/take-a-class/resources/learn-first-aid/burns
-- Canadian Red Cross heat emergencies: https://www.redcross.ca/training-and-certification/first-aid-tips-and-resources/first-aid-tips/first-aid-safety/5-climate-emergencies-you-need-to-be-ready-for
-- American Red Cross asthma attack: https://www.redcross.org/take-a-class/resources/learn-first-aid/asthma-attack
-- Canadian Red Cross anaphylaxis/insect bite first aid: https://www.redcross.ca/blog/2024/6/beat-the-bite-first-aid-for-insect-bites
-- American Red Cross muscle, bone, and joint injury: https://www.redcross.org/take-a-class/resources/learn-first-aid/muscle-bone-joint-injury
-- Lifesaving Society test-sheet list, including Oxygen Administration and National Lifeguard materials: https://www.lifesaving.org/member-services/delivery-system/test-sheets
-
-## Oxygen / Pulse Ox Handling
-
-Advanced lifeguard-equipment actions are included but are not universal basic first-aid requirements:
-
-- `Check SpO2 with pulse oximeter if trained/equipment available`
-- `Prepare oxygen kit`
-- `Administer oxygen if trained and protocol indicates`
-- `Prepare BVM/oxygen support if trained`
-- `Use suction if trained/protocol indicates`
-
-These actions are tagged in data as:
-
-- `advanced`
-- `lifeguard-equipment`
-- `instructor-review-needed`
-
-They are only optional/contextual in scenarios where they make sense, such as respiratory distress, anaphylaxis with breathing trouble, altered responsiveness, or CPR/AED-style breathing emergencies.
-
-## Scenario Rules
+## Editing Scenarios
 
 All scenario and action data lives in:
 
@@ -119,69 +57,60 @@ All scenario and action data lives in:
 scenarios.js
 ```
 
-Each scenario supports:
+Each scenario includes:
 
 - `id`
 - `title`
+- `cardSourceTitle`
 - `prompt`
+- `scenarioText`
 - `stages`
 - `recommendedSequence`
 - `criticalActions`
 - `expectedActions`
-- `contextualActions`
 - `optionalGoodActions`
 - `weakActions`
 - `dangerousActions`
-- `advancedActions`
 - `orderRules`
 - `actionFeedback`
 - `hints`
 - `suggestedOrderText`
-- `sourceNotes`
+- `sourceCardTreatment`
+- `sourceCardScenario`
 - `instructorReviewNotes`
 - `tags`
 - `difficulty`
 
-Rule meanings:
+Scoring stays 100-point based on the document treatment steps:
 
-- `criticalActions`: major misses if absent.
-- `expectedActions`: useful expected care, but less punishing than critical actions.
-- `contextualActions`: useful in this scenario without being universal first aid.
-- `optionalGoodActions`: small rewards for helpful extra actions.
-- `weakActions`: incomplete choices, such as light pressure for heavy bleeding.
-- `dangerousActions`: serious mistakes, such as CPR on a normally breathing person.
-- `advancedActions`: trained/equipment-dependent actions that need instructor review.
-- `orderRules`: sequencing checks, such as cooling before covering a burn or getting EMS/AED before CPR.
+- `criticalActions`: must-do card actions.
+- `expectedActions`: normal card treatment or monitoring steps.
+- `optionalGoodActions`: useful extras or context-specific card branches.
+- `weakActions`: incomplete or out-of-branch actions.
+- `dangerousActions`: actions the card says not to do.
+- `orderRules`: sequencing mistakes, such as tourniquet before direct pressure or flushing dry chemical before brushing.
 
-## How To Fine-Tune With Instructor Cards
+Keep `sourceCardTreatment` and `sourceCardScenario` close to the Word document wording. Rewrite `prompt` only enough to make the playable scenario natural.
 
-When the real flashcards or instructor situation cards are available:
+## Adding More Instructor Cards
 
-1. Replace `prompt` with the card wording.
-2. Adjust each stage's `choices` so the distractors match what classmates are likely to pick.
-3. Put must-have actions in `criticalActions`.
-4. Put expected but less fatal misses in `expectedActions`.
-5. Put context-specific trained/equipment actions in `contextualActions` or `advancedActions`.
-6. Put "nice to have" actions in `optionalGoodActions`.
-7. Put plausible but incomplete choices in `weakActions`.
-8. Put serious mistakes in `dangerousActions`.
-9. Add `orderRules` for priority mistakes.
-10. Add short `actionFeedback` for Practice Mode.
-11. Add `hints` for each stage.
-12. Update `sourceNotes` and `instructorReviewNotes`.
-13. Add matching Question Mode items for common traps.
+1. Add the new card wording to `sourceCards` in `scenarios.js`.
+2. Add or reuse actions in `actions`.
+3. Add a `makeScenario(...)` entry using the card treatment steps.
+4. Put must-have steps in `criticalActions`.
+5. Put normal treatment and monitoring steps in `expectedActions`.
+6. Put card warnings in `dangerousActions`.
+7. Mark unclear or extra assumptions in `instructorReviewNotes`.
+8. Add a matching `makeQuestion(...)` item with close distractors from other cards.
+9. Run the local static checks and browser smoke test.
 
-Keep the scenario format simple so classmates and instructors can review it without installing tools.
+Do not invent extra treatment rules as source truth. If an extra rule is useful for class discussion, mark it clearly as extra / instructor-review-needed.
 
 ## Run Locally
 
-Open directly:
+No npm install, framework, or build step is required.
 
-```text
-index.html
-```
-
-Or serve the folder:
+Serve the folder:
 
 ```powershell
 python -m http.server 8080
@@ -193,7 +122,7 @@ Then open:
 http://localhost:8080
 ```
 
-No npm install, framework, or build step is required.
+Opening `index.html` directly also works for quick checks, but the `http.server` command is the expected local test path.
 
 ## Publish With GitHub Pages
 
@@ -213,5 +142,6 @@ styles.css
 app.js
 scenarios.js
 README.md
-.gitignore
+source/First Aid Practise Cards.docx
+source-summary.md
 ```
