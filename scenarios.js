@@ -2467,19 +2467,6 @@ Look for wounds where electricity entered and exited the body, and cover the wou
         { id: "obstruction", text: "Look for obstructions in the mouth.", explanation: "That is a dental/mouth card step." },
       ],
     }),
-    makeQuestion("nose_injuries", {
-      miniCase: "Review-only: Nose Injuries source wording is unclear.",
-      question: "What should stay out of normal Question Mode?",
-      topicTags: ["nose injury", "instructor-review-needed"],
-      hideFromQuestionMode: true,
-      reviewOnly: true,
-      choices: [
-        { id: "copied", text: "It appears to repeat Ear Injuries wording and needs instructor review.", correct: true, explanation: "Correct. The source Nose Injuries section includes 'Foreign Object in Ear' and ear-specific wording." },
-        { id: "complete", text: "It is a complete nosebleed algorithm.", explanation: "The source does not contain a nosebleed algorithm in this section." },
-        { id: "delete", text: "Delete the card from the app.", explanation: "The instruction is to base content on the cards; preserving with review notes is safer than deleting." },
-        { id: "invent", text: "Invent new nose treatment rules to fill the gap.", explanation: "The request explicitly says not to invent extra treatment rules unless clearly marked for review." },
-      ],
-    }),
     makeQuestion("open_chest_wound", {
       miniCase: "A victim has a puncture wound to the chest.",
       question: "What dressing should be used?",
@@ -2621,19 +2608,6 @@ Look for wounds where electricity entered and exited the body, and cover the wou
         { id: "dry_dress_first", text: "Cover entry/exit wounds before turning off current.", explanation: "Dressing comes after the electrical danger is controlled." },
         { id: "stick", text: "Use a stick or plastic pole to remove a fallen wire.", explanation: "The card says do not attempt that." },
         { id: "water", text: "Flush with large volumes of water first.", explanation: "That belongs to chemical burns and could be unsafe around electricity." },
-      ],
-    }),
-    makeQuestion("radiation_burns", {
-      miniCase: "Review-only: Radiation Burns source wording is unclear.",
-      question: "What should stay out of normal Question Mode?",
-      topicTags: ["radiation burn", "instructor-review-needed"],
-      hideFromQuestionMode: true,
-      reviewOnly: true,
-      choices: [
-        { id: "repeat", text: "The Radiation Burns card repeats Electrical Burns treatment wording.", correct: true, explanation: "Correct. The source text appears duplicated, so the app preserves it with instructor-review notes." },
-        { id: "complete", text: "It clearly lists radiation-specific burn treatment.", explanation: "The source does not provide radiation-specific treatment wording." },
-        { id: "invent", text: "Invent a new radiation protocol and treat it as source truth.", explanation: "The request says not to invent extra treatment rules unless clearly marked for review." },
-        { id: "delete", text: "Remove it because the wording is unclear.", explanation: "The user asked to include Radiation Burns; preserving and flagging it is safer." },
       ],
     }),
   ];

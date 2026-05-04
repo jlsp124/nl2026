@@ -57,10 +57,9 @@ Each scenario decides which actions appear in each stage.
 
 - 32 source-card scenarios
 - 30 normal Question Mode items
-- 2 review-only/instructor-review questions hidden from normal Question Mode
 - 134 action choices
 
-Instructor-review-needed cards are preserved in data but hidden from normal Question Mode:
+Instructor-review-needed cards are preserved in data and excluded from normal Question Mode:
 
 - `Nose Injuries`: source wording repeats ear-injury text.
 - `Radiation Burns`: source treatment repeats electrical-burn text.
