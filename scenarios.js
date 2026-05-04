@@ -1307,7 +1307,7 @@ Look for wounds where electricity entered and exited the body, and cover the wou
 Turn off the current before touching the victim or the electrical source. Only EMS or electrical companies should handle high voltage wires and power lines. Do not attempt to use a stick or a plastic pole to remove a fallen wire from the victim. Stay well back.
 Stand in a dry area.
 Look for wounds where electricity entered and exited the body, and cover the wounds with a dry dressing.`,
-      review: "Instructor review needed: Radiation Burns repeats the Electrical Burns treatment in the source document.",
+      review: "Instructor review needed: Radiation Burns repeats the Electrical Burns treatment in the practice-card document.",
     },
   };
 
@@ -1373,6 +1373,8 @@ Look for wounds where electricity entered and exited the body, and cover the wou
       instructorReviewNotes: def.instructorReviewNotes || card.review,
       tags: def.tags || [],
       difficulty: def.difficulty || "medium",
+      hideFromQuestionMode: Boolean(def.hideFromQuestionMode),
+      reviewOnly: Boolean(def.reviewOnly),
     };
   }
 
@@ -1728,7 +1730,7 @@ Look for wounds where electricity entered and exited the body, and cover the wou
       optionalGoodActions: ["get_backup", "monitor_vital_signs"],
       orderRules: [before("fast_stroke_check", "comfortable_position", "Assess FAST signs before settling into positioning.", 5)],
       hints: {
-        assessment: "FAST is the source-card assessment.",
+        assessment: "FAST is the assessment for this card.",
         treatment: "Airway and breathing still matter.",
       },
       tags: ["medical", "stroke", "TIA", "FAST"],
@@ -1808,7 +1810,7 @@ Look for wounds where electricity entered and exited the body, and cover the wou
       dangerousActions: ["return_to_activity"],
       orderRules: [before("check_responsiveness", "stop_activity_seek_medical_help", "Assess the head injury before deciding activity/follow-up.", 4)],
       hints: {
-        treatment: "Stop activity is the clear source-card action.",
+        treatment: "Stop activity is the clear card action.",
         help: "EMS is tied to obvious trauma.",
       },
       tags: ["trauma", "concussion", "head injury"],
@@ -1902,6 +1904,8 @@ Look for wounds where electricity entered and exited the body, and cover the wou
       optionalGoodActions: ["get_first_aid_kit", "cover_sterile_dressing"],
       dangerousActions: ["flush_ear_object"],
       instructorReviewNotes: "Instructor review needed: source Nose Injuries text appears to be copied from Ear Injuries, including 'Foreign Object in Ear.'",
+      hideFromQuestionMode: true,
+      reviewOnly: true,
       orderRules: [before("assess_injury", "remove_visible_graspable_object_only", "Confirm visible/graspable before removing an object.", 7)],
       hints: {
         treatment: "This card is source-preserved but needs instructor cleanup.",
@@ -2241,6 +2245,8 @@ Look for wounds where electricity entered and exited the body, and cover the wou
       optionalGoodActions: ["get_backup", "get_first_aid_kit"],
       dangerousActions: ["touch_before_power_off"],
       instructorReviewNotes: "Instructor review needed: Radiation Burns repeats Electrical Burns source treatment, so this card is preserved but should be corrected by the instructor/source deck.",
+      hideFromQuestionMode: true,
+      reviewOnly: true,
       orderRules: [before("turn_off_electrical_current", "look_entry_exit_wounds", "Source wording repeats electrical current steps; do not touch before current is off.", 10)],
       hints: {
         assessment: "This is source-preserved but needs instructor review.",
@@ -2268,71 +2274,73 @@ Look for wounds where electricity entered and exited the body, and cover the wou
       correctAnswerId: def.choices.find((choice) => choice.correct)?.id || "",
       relatedTags: def.topicTags,
       topicTags: def.topicTags,
+      hideFromQuestionMode: Boolean(def.hideFromQuestionMode),
+      reviewOnly: Boolean(def.reviewOnly),
     };
   }
 
   const questions = [
     makeQuestion("diabetes", {
-      miniCase: "A conscious lane swimmer is shaky, weak, and confused.",
-      question: "What should you NOT do?",
+      miniCase: "A lane swimmer is shaky, weak, confused, and still conscious.",
+      question: "Which action should you avoid?",
       topicTags: ["diabetes", "blood sugar", "medication"],
       choices: [
-        { id: "no_insulin", text: "Administer insulin yourself.", correct: true, explanation: "Correct because the diabetes card says never administer insulin." },
+        { id: "no_insulin", text: "Administer insulin yourself.", correct: true, explanation: "The card says never administer insulin. Help them test blood sugar if a kit is available and help them self-administer sugar/medication." },
         { id: "test", text: "Help them test blood sugar if a kit is available.", explanation: "That is a card treatment step for a conscious victim." },
         { id: "sugar", text: "Help them self-administer sugar or glucose tablets.", explanation: "That fits the card if the victim is conscious and participating." },
         { id: "followup", text: "Advise medical attention and phone EMS if the condition worsens.", explanation: "That is the card's follow-up instruction." },
       ],
     }),
     makeQuestion("seizures", {
-      miniCase: "A victim is actively seizing in a change room stall.",
+      miniCase: "A victim is having a seizure in a change room stall.",
       question: "Which action should you avoid?",
       topicTags: ["seizure", "safety"],
       choices: [
-        { id: "mouth", text: "Place something in the victim's mouth.", correct: true, explanation: "Correct because the seizure card says do NOT place anything in the victim's mouth." },
+        { id: "hold_mouth", text: "Hold them down or put something in their mouth.", correct: true, explanation: "The card says not to restrict movement and not to place anything in the mouth. Clear nearby objects and record the number/duration." },
         { id: "clear", text: "Clear objects from the surrounding area.", explanation: "That prevents the victim from striking objects and getting injured." },
-        { id: "record", text: "Record the number and duration of seizures.", explanation: "That is a source-card monitoring step." },
+        { id: "record", text: "Record the number and duration of seizures.", explanation: "That is part of the seizure monitoring step." },
         { id: "ems", text: "Phone EMS.", explanation: "The seizure card lists phone EMS as treatment." },
       ],
     }),
     makeQuestion("anaphylaxis", {
-      miniCase: "A patron was stung by a bee and is showing anaphylaxis signs.",
-      question: "What should you ask first after getting EMS moving?",
+      miniCase: "A patron was stung by a bee and is having breathing difficulty.",
+      question: "What should you do early?",
       topicTags: ["anaphylaxis", "auto-injector", "breathing"],
       choices: [
-        { id: "carry", text: "Ask whether they carry an auto-injector.", correct: true, explanation: "Correct. The card says to ask if they carry an auto-injector, then help them administer their medication." },
+        { id: "ems_auto", text: "Phone EMS and ask if they carry an auto-injector.", correct: true, explanation: "The card says phone EMS, ask about an auto-injector, help them administer their medication, and monitor vital signs." },
         { id: "nitro", text: "Ask whether they have nitroglycerine.", explanation: "Nitroglycerine belongs to the chest-pain card, not anaphylaxis." },
         { id: "sling", text: "Ask whether family can transport them with a sling.", explanation: "That is from the slings card and misses the allergic breathing emergency." },
         { id: "tooth", text: "Ask for milk to store a tooth.", explanation: "That distractor belongs to dental/mouth injuries." },
       ],
     }),
     makeQuestion("unconscious_breathing", {
-      miniCase: "A victim removed from water is unconscious but breathing.",
-      question: "What position does the card point to after assessing breathing?",
+      miniCase: "A victim has been removed from the water. They are unconscious but breathing.",
+      question: "What care fits this situation?",
       topicTags: ["unconscious", "breathing", "recovery position"],
       choices: [
-        { id: "recovery", text: "Recovery position to maintain airway and allow drainage.", correct: true, explanation: "Correct. The card says recovery position for open airway and drainage." },
+        { id: "recovery", text: "Assess breathing, place in recovery position, check major bleeding/escaping air, and monitor breathing.", correct: true, explanation: "The card says assess breathing in the position found, use recovery position to maintain an airway, check for major bleeding/escaping air, and monitor breathing." },
         { id: "flat", text: "Force them flat and give fluids.", explanation: "Food/liquids are not safe for an unconscious victim, and this misses airway drainage." },
         { id: "sling", text: "Put the arm in a sling for transport.", explanation: "Slings are for limb support/transport decisions, not unconscious breathing." },
         { id: "thrusts", text: "Start abdominal thrusts immediately.", explanation: "Choking thrusts fit severe airway obstruction, not this breathing unconscious card." },
       ],
     }),
     makeQuestion("choking", {
-      miniCase: "A patron is choking but still coughing.",
-      question: "What should you do physically?",
+      miniCase: "A patron is choking on gum but is still coughing.",
+      question: "What should you do?",
       topicTags: ["choking", "airway"],
       choices: [
-        { id: "no_interfere", text: "Do not interfere physically.", correct: true, explanation: "Correct. The choking card says if the victim is coughing, do not interfere physically." },
+        { id: "no_interfere", text: "Do not interfere physically while they are coughing.", correct: true, explanation: "The card says if the victim is coughing, do not interfere physically." },
         { id: "abdominal", text: "Start abdominal thrusts right away.", explanation: "That fits not-coughing severe obstruction, not a victim who is still coughing." },
         { id: "mouth", text: "Put fingers in the mouth to clear it.", explanation: "That is not the card's coughing response and adds risk." },
         { id: "oxygen", text: "Administer oxygen before deciding if obstruction is severe.", explanation: "Oxygen is a drowning-card/trained-protocol item, not the first coughing-choking response." },
       ],
     }),
     makeQuestion("asthma", {
-      miniCase: "An aquafit participant is wheezing with asthma symptoms.",
-      question: "Which set best matches the card?",
+      miniCase: "An aquafit participant is having an asthma attack.",
+      question: "Which support fits the card?",
       topicTags: ["asthma", "breathing", "medication"],
       choices: [
-        { id: "position", text: "Comfortable position leaning forward, pursed-lip breathing, help with medication.", correct: true, explanation: "Correct. Those are direct asthma-card treatment steps." },
+        { id: "position", text: "Comfortable position leaning forward slightly, pursed-lip breathing, help with medication, loosen tight clothing.", correct: true, explanation: "The card lists those treatments and says phone EMS if the attack continues or the victim is distressed." },
         { id: "flat", text: "Lie flat, wrap ribs, and avoid medication.", explanation: "Those actions come from other contexts and conflict with asthma comfort/medication help." },
         { id: "sugar", text: "Give glucose tablets and never administer insulin.", explanation: "That is diabetes, not asthma." },
         { id: "tooth", text: "Store a tooth in milk and advise dental follow-up.", explanation: "That belongs to dental/mouth injuries." },
@@ -2340,21 +2348,21 @@ Look for wounds where electricity entered and exited the body, and cover the wou
     }),
     makeQuestion("hyperventilation", {
       miniCase: "After being held underwater, a victim is breathing much faster than necessary.",
-      question: "What does the card say to do?",
+      question: "Which support fits this situation?",
       topicTags: ["hyperventilation", "breathing"],
       choices: [
-        { id: "calm_pursed", text: "Reassure/calm them and coach pursed-lip breathing.", correct: true, explanation: "Correct. The hyperventilation card is short and lists those steps." },
+        { id: "calm_pursed", text: "Reassure/calm them and coach pursed-lip breathing.", correct: true, explanation: "The hyperventilation card lists reassurance/calm support and pursed-lip breathing." },
         { id: "auto", text: "Ask for an auto-injector and give a second dose after 5 minutes.", explanation: "That is anaphylaxis, not hyperventilation." },
         { id: "tourniquet", text: "Use a tourniquet if direct pressure fails.", explanation: "That is major bleeding care." },
         { id: "brush", text: "Brush off dry chemical before flushing.", explanation: "That is chemical burn care." },
       ],
     }),
     makeQuestion("drowning", {
-      miniCase: "A victim may have inhaled water, but they are now conscious.",
-      question: "Which delayed symptoms matter for medical follow-up?",
+      miniCase: "A swimmer had a water-inhalation event and now has coughing/wheezing.",
+      question: "What should you assess?",
       topicTags: ["drowning", "water inhalation", "breathing"],
       choices: [
-        { id: "symptoms", text: "Coughing, wheezing, difficulty breathing, nausea/vomiting, frothy sputum, altered LOC, behavior change, or shock.", correct: true, explanation: "Correct. That list tracks the source card's delayed water-inhalation symptoms." },
+        { id: "breathing_history", text: "Determine history and assess breathing; phone EMS/administer oxygen if water-inhalation symptoms are present.", correct: true, explanation: "The card mentions delayed symptoms up to 72 hours and lists coughing, wheezing, difficulty breathing, nausea/vomiting, frothy sputum, altered level of consciousness, behavior change, or shock." },
         { id: "tooth", text: "Only a missing tooth stored in milk.", explanation: "That is dental injury content and ignores water-inhalation symptoms." },
         { id: "rash", text: "Only hives and bee-sting swelling.", explanation: "Those are anaphylaxis clues, not the drowning delayed-symptom list." },
         { id: "ankle", text: "Only swelling at an ankle every hour.", explanation: "That distractor belongs to sprain/fracture care." },
@@ -2384,21 +2392,21 @@ Look for wounds where electricity entered and exited the body, and cover the wou
     }),
     makeQuestion("stroke_tia", {
       miniCase: "A lobby patron has possible stroke signs.",
-      question: "What assessment belongs to this card?",
+      question: "What should you check early?",
       topicTags: ["stroke", "TIA", "FAST"],
       choices: [
-        { id: "fast", text: "Assess for signs of a stroke using FAST.", correct: true, explanation: "Correct. FAST is the source-card stroke assessment." },
+        { id: "fast", text: "Assess for signs of a stroke using FAST.", correct: true, explanation: "FAST is the card's stroke assessment, followed by EMS and airway/breathing care." },
         { id: "glucose", text: "Help test blood sugar first as the main card step.", explanation: "That is diabetes care, not the stroke/TIA card's named assessment." },
         { id: "duration", text: "Record number and duration of seizures.", explanation: "That belongs to seizures." },
         { id: "entry_exit", text: "Look for electrical entry and exit wounds.", explanation: "That belongs to electrical burns." },
       ],
     }),
     makeQuestion("major_bleeding", {
-      miniCase: "You are wearing gloves and see major bleeding from a leg cut.",
-      question: "What does the card say to do immediately?",
+      miniCase: "A victim has a cut leg in the change room with severe bleeding.",
+      question: "If you have gloves, what should you do immediately?",
       topicTags: ["major bleeding", "direct pressure", "tourniquet"],
       choices: [
-        { id: "pressure", text: "Apply direct pressure to the wound immediately using your hand.", correct: true, explanation: "Correct. That is the gloved-rescuer step on the Major Bleeding card." },
+        { id: "pressure", text: "Apply direct pressure to the wound using your hand.", correct: true, explanation: "The card says if wearing gloves, apply direct pressure immediately." },
         { id: "victim_pressure", text: "Ask the victim to apply pressure even though you have gloves.", explanation: "That is the no-gloves branch; with gloves, you apply direct pressure immediately." },
         { id: "tourniquet_first", text: "Use a tourniquet before trying direct pressure.", explanation: "The card says tourniquet when direct pressure fails." },
         { id: "ointment", text: "Apply antibiotic ointment before pressure.", explanation: "Ointment belongs to minor wounds, not immediate major bleeding control." },
@@ -2406,7 +2414,7 @@ Look for wounds where electricity entered and exited the body, and cover the wou
     }),
     makeQuestion("wounds", {
       miniCase: "A patron has a small scraped/cut wound.",
-      question: "Which treatment sequence matches the card?",
+      question: "What is the best treatment sequence?",
       topicTags: ["wounds", "dressing", "ointment"],
       choices: [
         { id: "flush_cover", text: "Flush with clean tap water, cover with sterile dressing, apply antibiotic ointment if available.", correct: true, explanation: "Correct. Those are the wound-card treatment items." },
@@ -2431,7 +2439,7 @@ Look for wounds where electricity entered and exited the body, and cover the wou
       question: "When should you move them?",
       topicTags: ["spinal injury", "immobilization", "movement"],
       choices: [
-        { id: "only_no_choice", text: "Only if there is no other choice: safety risk, open airway, or perform CPR.", correct: true, explanation: "Correct. Those are the source-card movement exceptions." },
+        { id: "only_no_choice", text: "Only if there is no other choice: safety risk, open airway, or perform CPR.", correct: true, explanation: "Those are the card's movement exceptions." },
         { id: "comfort", text: "Whenever a more comfortable position is available.", explanation: "The card says immobilize in position found and do not move unless there is no other choice." },
         { id: "sling", text: "Move them to fit a sling before EMS transport.", explanation: "Slings are a separate transport card and do not override spinal precautions." },
         { id: "drainage", text: "Always move them for drainage even if breathing is fine.", explanation: "Drainage may matter for airway, but the spinal card limits movement to no-other-choice reasons." },
@@ -2460,22 +2468,24 @@ Look for wounds where electricity entered and exited the body, and cover the wou
       ],
     }),
     makeQuestion("nose_injuries", {
-      miniCase: "You are reviewing the Nose Injuries card in the source document.",
-      question: "What should you flag?",
+      miniCase: "Review-only: Nose Injuries source wording is unclear.",
+      question: "What should stay out of normal Question Mode?",
       topicTags: ["nose injury", "instructor-review-needed"],
+      hideFromQuestionMode: true,
+      reviewOnly: true,
       choices: [
         { id: "copied", text: "It appears to repeat Ear Injuries wording and needs instructor review.", correct: true, explanation: "Correct. The source Nose Injuries section includes 'Foreign Object in Ear' and ear-specific wording." },
-        { id: "complete", text: "It is a complete nosebleed algorithm.", explanation: "The uploaded source does not contain a nosebleed algorithm in this section." },
+        { id: "complete", text: "It is a complete nosebleed algorithm.", explanation: "The source does not contain a nosebleed algorithm in this section." },
         { id: "delete", text: "Delete the card from the app.", explanation: "The instruction is to base content on the cards; preserving with review notes is safer than deleting." },
         { id: "invent", text: "Invent new nose treatment rules to fill the gap.", explanation: "The request explicitly says not to invent extra treatment rules unless clearly marked for review." },
       ],
     }),
     makeQuestion("open_chest_wound", {
-      miniCase: "A stab wound leaves an open chest wound.",
-      question: "What dressing does the card allow?",
+      miniCase: "A victim has a puncture wound to the chest.",
+      question: "What dressing should be used?",
       topicTags: ["open chest wound", "breathing", "dressing"],
       choices: [
-        { id: "non_occ", text: "A non-occlusive dressing, or leave exposed; direct pressure only if massive bleeding.", correct: true, explanation: "Correct. That follows the source card closely." },
+        { id: "non_occ", text: "Only a non-occlusive dressing, or leave exposed; direct pressure only if massive bleeding.", correct: true, explanation: "The card warns against occlusive dressing and says to monitor breathing." },
         { id: "seal", text: "Seal it tightly with an occlusive dressing.", explanation: "The card says only non-occlusive dressing or leave exposed." },
         { id: "wrap", text: "Wrap, strap, or tape the ribs.", explanation: "That is explicitly rejected by the broken-ribs card and does not fit open chest wound." },
         { id: "organs", text: "Push protruding organs back in.", explanation: "That is a dangerous protruding-organs distractor." },
@@ -2483,11 +2493,11 @@ Look for wounds where electricity entered and exited the body, and cover the wou
     }),
     makeQuestion("broken_ribs", {
       miniCase: "A victim fell onto their ribs.",
-      question: "Should the ribs be wrapped, strapped, or taped?",
+      question: "What should you NOT do?",
       topicTags: ["broken ribs", "chest injury"],
       choices: [
-        { id: "no_wrap", text: "No. Rib fractures are not wrapped, strapped, or taped.", correct: true, explanation: "Correct. That sentence is directly from the card." },
-        { id: "yes_wrap", text: "Yes, tightly wrap them to stop movement.", explanation: "The card says not to wrap, strap, or tape rib fractures." },
+        { id: "no_wrap", text: "Wrap, strap, or tape the ribs.", correct: true, explanation: "The card says rib fractures are not wrapped, strapped, or taped." },
+        { id: "position", text: "Help the victim into a comfortable position.", explanation: "That is a card treatment step, so it is not the action to avoid." },
         { id: "tooth", text: "Only if a tooth was knocked out.", explanation: "Dental injuries do not change rib fracture care." },
         { id: "dry_chemical", text: "Only after brushing off dry chemicals.", explanation: "That is chemical burn sequencing, not rib care." },
       ],
@@ -2509,17 +2519,17 @@ Look for wounds where electricity entered and exited the body, and cover the wou
       topicTags: ["internal bleeding", "shock", "trauma"],
       choices: [
         { id: "food", text: "Giving food or liquids.", correct: true, explanation: "Correct. The internal bleeding card says do not give any food or liquids." },
-        { id: "ems", text: "Phoning EMS.", explanation: "Phone EMS is a source-card step." },
-        { id: "position", text: "Helping the victim into a comfortable position.", explanation: "That is a source-card step." },
-        { id: "monitor", text: "Monitoring for breathing changes.", explanation: "That is a source-card step." },
+        { id: "ems", text: "Phoning EMS.", explanation: "Phone EMS is a card step." },
+        { id: "position", text: "Helping the victim into a comfortable position.", explanation: "That is a card step." },
+        { id: "monitor", text: "Monitoring for breathing changes.", explanation: "That is a card step." },
       ],
     }),
     makeQuestion("protruding_organs", {
       miniCase: "A victim has organs protruding through an abdominal wound.",
-      question: "What should you NOT do?",
+      question: "What should you avoid?",
       topicTags: ["protruding organs", "abdominal injury"],
       choices: [
-        { id: "back", text: "Try to put the organs back in the abdomen.", correct: true, explanation: "Correct. The card directly says not to put the organs back." },
+        { id: "back", text: "Trying to put the organs back in the abdomen.", correct: true, explanation: "The card says cover with a moist sterile dressing and do not put organs back." },
         { id: "moist", text: "Cover with a sterile dressing moistened with very clean water.", explanation: "That is the card's drying-prevention step." },
         { id: "protect", text: "Protect from further damage.", explanation: "That is a card treatment step." },
         { id: "ems", text: "Phone EMS.", explanation: "Phone EMS is required by the card." },
@@ -2541,7 +2551,7 @@ Look for wounds where electricity entered and exited the body, and cover the wou
       question: "What should you avoid?",
       topicTags: ["dislocation", "musculoskeletal", "realignment"],
       choices: [
-        { id: "put_back", text: "Trying to put the bones back.", correct: true, explanation: "Correct. The dislocation card says this can cause more damage." },
+        { id: "put_back", text: "Attempt to put the bones back.", correct: true, explanation: "The card says immobilize/support and do not attempt realignment because it can cause more damage." },
         { id: "ems", text: "Phoning EMS.", explanation: "Phone EMS is on the dislocation card." },
         { id: "ice", text: "Icing 10-15 minutes every hour.", explanation: "That is a card treatment step." },
         { id: "support", text: "Supporting the injured part comfortably.", explanation: "That is also a card treatment step." },
@@ -2554,16 +2564,16 @@ Look for wounds where electricity entered and exited the body, and cover the wou
       choices: [
         { id: "elevate_realign", text: "Elevating the fractured limb and attempting realignment.", correct: true, explanation: "Correct. The closed fracture card says do not elevate a limb with a fracture and do not attempt realignment." },
         { id: "rest_immobilize", text: "Resting and immobilizing in a comfortable position.", explanation: "Those are card treatment steps." },
-        { id: "ice", text: "Icing 10-15 minutes every hour.", explanation: "That is a source-card treatment step." },
+        { id: "ice", text: "Icing 10-15 minutes every hour.", explanation: "That is a card treatment step." },
         { id: "ems", text: "Phoning EMS.", explanation: "Phone EMS is on the card." },
       ],
     }),
     makeQuestion("open_fracture", {
       miniCase: "A victim has an open humerus fracture.",
-      question: "Which action matches the source card?",
+      question: "What should you do for the exposed bone and wound?",
       topicTags: ["open fracture", "exposed bone"],
       choices: [
-        { id: "bandage", text: "Place a clean bandage over the exposed bone and wound.", correct: true, explanation: "Correct. That is a source-card treatment step." },
+        { id: "bandage", text: "Place a clean bandage over the exposed bone and wound.", correct: true, explanation: "The card says to cover the exposed bone/wound, immobilize in position found, and avoid realignment." },
         { id: "realign", text: "Realign the bone before bandaging.", explanation: "The card says do not attempt realignment." },
         { id: "move", text: "Move the victim unless it is absolutely essential.", explanation: "The card says do NOT move unless absolutely essential." },
         { id: "food", text: "Give food or liquids for shock.", explanation: "Food/liquids are not a fracture treatment and are ruled out on chest/abdominal injury cards." },
@@ -2575,17 +2585,17 @@ Look for wounds where electricity entered and exited the body, and cover the wou
       topicTags: ["pelvic fracture", "hip fracture"],
       choices: [
         { id: "legs", text: "Do not move or lift the legs.", correct: true, explanation: "Correct. The pelvic/hip fracture card says try not to move or lift the legs." },
-        { id: "hips", text: "Hold and support the hips.", explanation: "That is a source-card treatment step." },
-        { id: "distal", text: "Check distal circulation and sensation in the legs.", explanation: "That is a source-card assessment/monitoring step." },
+        { id: "hips", text: "Hold and support the hips.", explanation: "That is a card treatment step." },
+        { id: "distal", text: "Check distal circulation and sensation in the legs.", explanation: "That is a card assessment/monitoring step." },
         { id: "ems", text: "Phone EMS.", explanation: "Phone EMS is required by the card." },
       ],
     }),
     makeQuestion("thermal_burns", {
       miniCase: "A patron has a thermal burn.",
-      question: "What is the first treatment move on the burn card?",
+      question: "What comes first?",
       topicTags: ["thermal burn", "burns", "cool water"],
       choices: [
-        { id: "flush", text: "Flush the burned area with cool, clean water.", correct: true, explanation: "Correct. Every thermal-burn degree in the card starts with or includes flushing with cool, clean water." },
+        { id: "flush", text: "Flush/cool with cool clean water.", correct: true, explanation: "The card says flush with cool clean water, then cover with a sterile dry dressing depending on severity." },
         { id: "blisters", text: "Break blisters to release pressure.", explanation: "The second-degree burn card says do not break blisters." },
         { id: "brush", text: "Brush off dry chemicals first.", explanation: "That is chemical burn care, not thermal burn." },
         { id: "current", text: "Turn off electrical current before touching.", explanation: "That is electrical burn care." },
@@ -2596,30 +2606,32 @@ Look for wounds where electricity entered and exited the body, and cover the wou
       question: "What comes before flushing?",
       topicTags: ["chemical burn", "burns", "flushing"],
       choices: [
-        { id: "brush", text: "Brush off dry chemicals and remove contaminated clothing.", correct: true, explanation: "Correct. The card says brush off dry chemicals before flushing and remove contaminated clothing." },
+        { id: "brush", text: "Brush off dry chemicals first, then flush with large volumes of water.", correct: true, explanation: "The card says brush off dry chemicals before flushing." },
         { id: "water_first", text: "Flush first before brushing dry chemical.", explanation: "The card says brush off dry chemicals before flushing." },
         { id: "tooth", text: "Store a tooth in milk.", explanation: "That belongs to dental/mouth injury care." },
         { id: "wrap", text: "Wrap ribs to support breathing.", explanation: "That is wrong for broken ribs and unrelated to chemical burns." },
       ],
     }),
     makeQuestion("electrical_burns", {
-      miniCase: "A victim is near an electrical source.",
-      question: "What must happen before touching the victim or source?",
+      miniCase: "A victim may be touching an electrical source.",
+      question: "What must happen before touching them?",
       topicTags: ["electrical burn", "electrical safety"],
       choices: [
-        { id: "current", text: "Turn off the current and stay away from high voltage.", correct: true, explanation: "Correct. The card says turn off current before touching and stay well back from high voltage." },
+        { id: "current", text: "Turn off the current / stay away from high voltage.", correct: true, explanation: "The card says turn off current before touching and stay well back from high voltage." },
         { id: "dry_dress_first", text: "Cover entry/exit wounds before turning off current.", explanation: "Dressing comes after the electrical danger is controlled." },
         { id: "stick", text: "Use a stick or plastic pole to remove a fallen wire.", explanation: "The card says do not attempt that." },
         { id: "water", text: "Flush with large volumes of water first.", explanation: "That belongs to chemical burns and could be unsafe around electricity." },
       ],
     }),
     makeQuestion("radiation_burns", {
-      miniCase: "You are reviewing the Radiation Burns card in the uploaded source.",
-      question: "What should be marked for instructor review?",
+      miniCase: "Review-only: Radiation Burns source wording is unclear.",
+      question: "What should stay out of normal Question Mode?",
       topicTags: ["radiation burn", "instructor-review-needed"],
+      hideFromQuestionMode: true,
+      reviewOnly: true,
       choices: [
         { id: "repeat", text: "The Radiation Burns card repeats Electrical Burns treatment wording.", correct: true, explanation: "Correct. The source text appears duplicated, so the app preserves it with instructor-review notes." },
-        { id: "complete", text: "It clearly lists radiation-specific burn treatment.", explanation: "The uploaded source does not provide radiation-specific treatment wording." },
+        { id: "complete", text: "It clearly lists radiation-specific burn treatment.", explanation: "The source does not provide radiation-specific treatment wording." },
         { id: "invent", text: "Invent a new radiation protocol and treat it as source truth.", explanation: "The request says not to invent extra treatment rules unless clearly marked for review." },
         { id: "delete", text: "Remove it because the wording is unclear.", explanation: "The user asked to include Radiation Burns; preserving and flagging it is safer." },
       ],
@@ -2633,7 +2645,7 @@ Look for wounds where electricity entered and exited the body, and cover the wou
     },
     {
       topic: "Instructor-review-needed cards",
-      summary: "Nose Injuries repeats ear-injury wording, and Radiation Burns repeats electrical-burn wording in the uploaded source.",
+      summary: "Nose Injuries repeats ear-injury wording, and Radiation Burns repeats electrical-burn wording in the practice-card document.",
     },
   ];
 

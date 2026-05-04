@@ -6,7 +6,7 @@
   const startNote = "Based on our first aid practice cards.";
 
   const state = {
-    mode: "practice",
+    mode: "scenario",
     queue: [],
     scenarioIndex: 0,
     stageIndex: 0,
@@ -113,8 +113,12 @@
     state.dragIndex = null;
   }
 
-  function startMode(mode) {
-    state.mode = mode;
+  function playableQuestions() {
+    return (data.questions || []).filter((question) => !question.hideFromQuestionMode && !question.reviewOnly);
+  }
+
+  function startScenarioPractice() {
+    state.mode = "scenario";
     state.questionQueue = [];
     state.questionIndex = 0;
     state.questionScore = 0;
@@ -128,7 +132,7 @@
   function startQuestionMode() {
     state.mode = "question";
     state.queue = [];
-    state.questionQueue = shuffle(data.questions || []);
+    state.questionQueue = shuffle(playableQuestions());
     state.questionIndex = 0;
     state.questionScore = 0;
     state.selectedAnswerId = "";
@@ -155,11 +159,7 @@
     state.selected.push(actionId);
     state.hint = "";
 
-    if (state.mode === "practice") {
-      state.latestUpdate = currentScenario().actionFeedback[actionId] || "Added. Keep building your order.";
-    } else {
-      state.latestUpdate = "Action added.";
-    }
+    state.latestUpdate = currentScenario().actionFeedback[actionId] || "Added. Keep building your order.";
 
     render();
   }
@@ -468,7 +468,7 @@
       state.questionIndex += 1;
       state.selectedAnswerId = "";
     } else {
-      state.questionQueue = shuffle(data.questions || []);
+      state.questionQueue = shuffle(playableQuestions());
       state.questionIndex = 0;
       state.questionScore = 0;
       state.selectedAnswerId = "";
@@ -479,13 +479,11 @@
   function renderStart() {
     app.innerHTML = `
       <section class="card start-card">
-        <p class="eyebrow">class practice</p>
-        <h1>Pool Deck Response</h1>
-        <p class="start-subtitle">Quick first aid scenario practice</p>
+        <h1>Quick First Aid Scenario Practice</h1>
+        <p class="start-subtitle">Pick actions in order, review your response, then see what you missed.</p>
         <p class="note">${escapeHtml(startNote)}</p>
         <div class="mode-actions">
-          <button class="btn primary" type="button" data-start-mode="practice">Practice Mode</button>
-          <button class="btn ghost" type="button" data-start-mode="test">Test Mode</button>
+          <button class="btn primary" type="button" data-start-mode="scenario">Scenario Practice</button>
           <button class="btn ghost mode-wide" type="button" data-start-mode="question">Question Mode</button>
         </div>
       </section>
@@ -545,7 +543,7 @@
   }
 
   function renderStageCard(stage, scenario, stageCount) {
-    const canHint = state.mode === "practice";
+    const canHint = true;
 
     return `
       <section class="stage-panel">
@@ -577,7 +575,7 @@
       <section class="card quiz-card">
         <div class="top-row">
           <div class="progress-line">
-            <span>${state.mode === "practice" ? "Practice" : "Test"} Mode</span>
+            <span>Scenario Practice</span>
             <span>Scenario ${state.scenarioIndex + 1} of ${state.queue.length}</span>
           </div>
           <div class="progress-track" aria-hidden="true">
@@ -652,7 +650,7 @@
       <section class="card review-card">
         <div class="top-row">
           <div class="progress-line">
-            <span>${state.mode === "practice" ? "Practice" : "Test"} Mode</span>
+            <span>Scenario Practice</span>
             <span>Scenario ${state.scenarioIndex + 1} of ${state.queue.length}</span>
           </div>
           <div class="progress-track" aria-hidden="true">
@@ -862,14 +860,14 @@
       if (button.dataset.startMode === "question") {
         startQuestionMode();
       } else {
-        startMode(button.dataset.startMode);
+        startScenarioPractice();
       }
     } else if (button.dataset.answerId) {
       answerQuestion(button.dataset.answerId);
     } else if (button.dataset.nextQuestion) {
       nextQuestion();
     } else if (button.dataset.startOver) {
-      state.mode = "practice";
+      state.mode = "scenario";
       state.queue = [];
       state.questionQueue = [];
       state.result = null;
