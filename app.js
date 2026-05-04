@@ -483,7 +483,7 @@
         <p class="start-subtitle">Pick actions in order, review your response, then see what you missed.</p>
         <p class="note">${escapeHtml(startNote)}</p>
         <div class="mode-actions">
-          <button class="btn primary" type="button" data-start-mode="scenario">Scenario Practice</button>
+          <button class="btn primary mode-wide" type="button" data-start-mode="scenario">Scenario Practice</button>
           <button class="btn ghost mode-wide" type="button" data-start-mode="question">Question Mode</button>
         </div>
       </section>
